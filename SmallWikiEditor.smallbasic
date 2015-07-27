@@ -1,12 +1,13 @@
 ' Small Wiki Editor
-' Version pilot
+' Version 0.0a
 ' Copyright © 2015 Nonki Takahashi.  The MIT License.
 ' Last update 2015-07-27
-' Program ID NVD371
+' Program ID NVD371-0
 '
-title = "Small Wiki Editor (pilot)"
+title = "Small Wiki Editor 0.0a"
 GraphicsWindow.Title = title
 SB_Workaround()
+CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 gw = 598
 gh = 428
 GraphicsWindow.Width = gw
@@ -31,9 +32,8 @@ GraphicsWindow.DrawLine(posX[4], 5, posX[4], 30)
 GraphicsWindow.DrawLine(posX[4], 30, gw - 5, 30)
 tbox = Controls.AddMultiLineTextBox(posX[1], 35)
 Controls.SetSize(tbox, gw - 10, gh - 40)
-folder = "http://www.nonkit.com/smallbasic.files"
-wikiText = NetWork.GetWebPageContents(folder + "/sample.wiki")
-htmlText = Network.GetWebPageContents(folder + "/sample.html")
+LoadWikiText()
+LoadHTMLText()
 Controls.SetTextBoxText(tbox, wikiText)
 GraphicsWindow.MouseDown = OnMouseDown
 While "True"
@@ -80,6 +80,56 @@ Sub OnMouseDown
   my = GraphicsWindow.MouseY
   mouseDown = "True"
 EndSub
+Sub LoadWikiText
+  wikiText = "*bold*" + CRLF
+  wikiText = wikiText + "_italics_" + CRLF
+  wikiText = wikiText + "+underline+" + CRLF
+  wikiText = wikiText + "! Heading 1" + CRLF
+  wikiText = wikiText + "!! Heading 2" + CRLF
+  wikiText = wikiText + "!!! Heading 3" + CRLF
+  wikiText = wikiText + "* Bullet List" + CRLF
+  wikiText = wikiText + "** Bullet List 2" + CRLF
+  wikiText = wikiText + "# Number List" + CRLF
+  wikiText = wikiText + "## Number List 2" + CRLF
+  wikiText = wikiText + "[image:Turtle.png]" + CRLF
+  wikiText = wikiText + "||Table Heading 1||Table Heading 2||" + CRLF
+  wikiText = wikiText + "|Row 1 - Cell 1|Row 1 - Cell 2|" + CRLF
+  wikiText = wikiText + "|Row 2 - Cell 1|Row 2 - Cell 2|" + CRLF
+  wikiText = wikiText + "----"
+EndSub
+Sub LoadHTMLText
+  htmlText = "<html>" + CRLF
+  htmlText = htmlText + "<body>" + CRLF
+  htmlText = htmlText + "<p>" + CRLF
+  htmlText = htmlText + "<strong>bold</strong><br>" + CRLF
+  htmlText = htmlText + "<em>italics</em><br>" + CRLF
+  htmlText = htmlText + "<span style='text-decoration:underline;'>underline</span>" + CRLF
+  htmlText = htmlText + "</p>" + CRLF
+  htmlText = htmlText + "<h1>Heading 1</h1>" + CRLF
+  htmlText = htmlText + "<h2>Heading 2</h2>" + CRLF
+  htmlText = htmlText + "<h3>Heading 3</h3>" + CRLF
+  htmlText = htmlText + "<ul>" + CRLF
+  htmlText = htmlText + "<li>Bullet List</li><br>" + CRLF
+  htmlText = htmlText + "<ul>" + CRLF
+  htmlText = htmlText + "<li>Bullet List 2</li>" + CRLF
+  htmlText = htmlText + "</ul>" + CRLF
+  htmlText = htmlText + "</ul>" + CRLF
+  htmlText = htmlText + "<ol>" + CRLF
+  htmlText = htmlText + "<li>Number List</li><br>" + CRLF
+  htmlText = htmlText + "<ol>" + CRLF
+  htmlText = htmlText + "<li>Number List 2</li>" + CRLF
+  htmlText = htmlText + "</ol>" + CRLF
+  htmlText = htmlText + "</ol>" + CRLF
+  htmlText = htmlText + "<p><img src='http://www.nonkit.com/smallbasic.files/Turtle.png'></p>" + CRLF
+  htmlText = htmlText + "<table border=1>" + CRLF
+  htmlText = htmlText + "<tr><th>Table Heading 1</th><th>Table Heading 2</th></tr>" + CRLF
+  htmlText = htmlText + "<tr><td>Row 1-Cell 1</td><td>Row 1-Cell 2</td></tr>" + CRLF
+  htmlText = htmlText + "<tr><td>Row 2-Cell 1</td><td>Row 2-Cell 2</td></tr>" + CRLF
+  htmlText = htmlText + "</table>" + CRLF
+  htmlText = htmlText + "<hr>" + CRLF
+  htmlText = htmlText + "</body>" + CRLF
+  htmlText = htmlText + "</html>"
+EndSub
 Sub Shapes_Init
   ' Shapes | Initialize shapes data
   ' return shX, shY - current position of shapes
@@ -99,7 +149,7 @@ Sub Shapes_Init
   shape[10] = "func=ell;x=40;y=170;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
   shape[11] = "func=text;x=50;y=164;fn=Segoe UI;fs=12;text=Bullet List 2;bc=#000000;"
   shape[12] = "func=text;x=18;y=180;fn=Segoe UI;fs=12;text=1. Number List;bc=#000000;"
-  shape[13] = "func=text;x=38;y=196;fn=Segoe UI;fs=12;text=2. Number List 2;bc=#000000;"
+  shape[13] = "func=text;x=38;y=196;fn=Segoe UI;fs=12;text=1. Number List 2;bc=#000000;"
   shape[14] = "func=img;x=0;y=212;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
   shape[15] = "func=rect;x=0;y=464;width=200;height=54;bc=#FFFFFF;pc=#666666;pw=1;"
   shape[16] = "func=rect;x=0;y=482;width=200;height=1;pc=#666666;pw=1;"
@@ -190,11 +240,7 @@ Sub Shapes_Add
     ElseIf shp["func"] = "line" Then
       shp["obj"] = Shapes.AddLine(shp["x1"] * s, shp["y1"] * s, shp["x2"] * s, shp["y2"] * s)
     ElseIf shp["func"] = "text" Then
-      If silverlight Then
-        fs = Math.Floor(shp["fs"] * 0.9)
-      Else
-        fs = shp["fs"]
-      EndIf
+      fs = shp["fs"]
       GraphicsWindow.FontSize = fs * s
       GraphicsWindow.FontName = shp["fn"]
       GraphicsWindow.FontBold = shp["fb"]
