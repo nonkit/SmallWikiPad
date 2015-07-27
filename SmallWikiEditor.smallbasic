@@ -1,13 +1,14 @@
 ' Small Wiki Editor
-' Version 0.0a
+' Version 0.2a
 ' Copyright © 2015 Nonki Takahashi.  The MIT License.
 ' Last update 2015-07-27
-' Program ID NVD371-0
+' Program ID NVD371-2
 '
-title = "Small Wiki Editor 0.0a"
+title = "Small Wiki Editor 0.2a"
 GraphicsWindow.Title = title
 SB_Workaround()
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+LT = "<"
 gw = 598
 gh = 428
 GraphicsWindow.Width = gw
@@ -99,36 +100,36 @@ Sub LoadWikiText
 EndSub
 Sub LoadHTMLText
   htmlText = "<html>" + CRLF
-  htmlText = htmlText + "<body>" + CRLF
-  htmlText = htmlText + "<p>" + CRLF
-  htmlText = htmlText + "<strong>bold</strong><br>" + CRLF
-  htmlText = htmlText + "<em>italics</em><br>" + CRLF
-  htmlText = htmlText + "<span style='text-decoration:underline;'>underline</span>" + CRLF
-  htmlText = htmlText + "</p>" + CRLF
-  htmlText = htmlText + "<h1>Heading 1</h1>" + CRLF
-  htmlText = htmlText + "<h2>Heading 2</h2>" + CRLF
-  htmlText = htmlText + "<h3>Heading 3</h3>" + CRLF
-  htmlText = htmlText + "<ul>" + CRLF
-  htmlText = htmlText + "<li>Bullet List</li><br>" + CRLF
-  htmlText = htmlText + "<ul>" + CRLF
-  htmlText = htmlText + "<li>Bullet List 2</li>" + CRLF
-  htmlText = htmlText + "</ul>" + CRLF
-  htmlText = htmlText + "</ul>" + CRLF
-  htmlText = htmlText + "<ol>" + CRLF
-  htmlText = htmlText + "<li>Number List</li><br>" + CRLF
-  htmlText = htmlText + "<ol>" + CRLF
-  htmlText = htmlText + "<li>Number List 2</li>" + CRLF
-  htmlText = htmlText + "</ol>" + CRLF
-  htmlText = htmlText + "</ol>" + CRLF
-  htmlText = htmlText + "<p><img src='http://www.nonkit.com/smallbasic.files/Turtle.png'></p>" + CRLF
-  htmlText = htmlText + "<table border=1>" + CRLF
-  htmlText = htmlText + "<tr><th>Table Heading 1</th><th>Table Heading 2</th></tr>" + CRLF
-  htmlText = htmlText + "<tr><td>Row 1-Cell 1</td><td>Row 1-Cell 2</td></tr>" + CRLF
-  htmlText = htmlText + "<tr><td>Row 2-Cell 1</td><td>Row 2-Cell 2</td></tr>" + CRLF
-  htmlText = htmlText + "</table>" + CRLF
-  htmlText = htmlText + "<hr>" + CRLF
-  htmlText = htmlText + "</body>" + CRLF
-  htmlText = htmlText + "</html>"
+  htmlText = htmlText + LT + "body>" + CRLF
+  htmlText = htmlText + LT + "p>" + CRLF
+  htmlText = htmlText + LT + "strong>bold" + LT + "/strong>" + LT + "br>" + CRLF
+  htmlText = htmlText + LT + "em>italics" + LT + "/em>" + LT + "br>" + CRLF
+  htmlText = htmlText + LT + "span style='text-decoration:underline;'>underline" + LT + "/span>" + CRLF
+  htmlText = htmlText + LT + "/p>" + CRLF
+  htmlText = htmlText + LT + "h1>Heading 1" + LT + "/h1>" + CRLF
+  htmlText = htmlText + LT + "h2>Heading 2" + LT + "/h2>" + CRLF
+  htmlText = htmlText + LT + "h3>Heading 3" + LT + "/h3>" + CRLF
+  htmlText = htmlText + LT + "ul>" + CRLF
+  htmlText = htmlText + LT + "li>Bullet List" + LT + "/li>" + LT + "br>" + CRLF
+  htmlText = htmlText + LT + "ul>" + CRLF
+  htmlText = htmlText + LT + "li>Bullet List 2" + LT + "/li>" + CRLF
+  htmlText = htmlText + LT + "/ul>" + CRLF
+  htmlText = htmlText + LT + "/ul>" + CRLF
+  htmlText = htmlText + LT + "ol>" + CRLF
+  htmlText = htmlText + LT + "li>Number List" + LT + "/li>" + LT + "br>" + CRLF
+  htmlText = htmlText + LT + "ol>" + CRLF
+  htmlText = htmlText + LT + "li>Number List 2" + LT + "/li>" + CRLF
+  htmlText = htmlText + LT + "/ol>" + CRLF
+  htmlText = htmlText + LT + "/ol>" + CRLF
+  htmlText = htmlText + LT + "p>" + LT + "img src='http://www.nonkit.com/smallbasic.files/Turtle.png'>" + LT + "/p>" + CRLF
+  htmlText = htmlText + LT + "table border=1>" + CRLF
+  htmlText = htmlText + LT + "tr>" + LT + "th>Table Heading 1" + LT + "/th>" + LT + "th>Table Heading 2" + LT + "/th>" + LT + "/tr>" + CRLF
+  htmlText = htmlText + LT + "tr>" + LT + "td>Row 1-Cell 1" + LT + "/td>" + LT + "td>Row 1-Cell 2" + LT + "/td>" + LT + "/tr>" + CRLF
+  htmlText = htmlText + LT + "tr>" + LT + "td>Row 2-Cell 1" + LT + "/td>" + LT + "td>Row 2-Cell 2" + LT + "/td>" + LT + "/tr>" + CRLF
+  htmlText = htmlText + LT + "/table>" + CRLF
+  htmlText = htmlText + LT + "hr>" + CRLF
+  htmlText = htmlText + LT + "/body>" + CRLF
+  htmlText = htmlText + LT + "/html>"
 EndSub
 Sub Shapes_Init
   ' Shapes | Initialize shapes data
