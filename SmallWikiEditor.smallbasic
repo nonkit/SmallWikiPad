@@ -1,85 +1,128 @@
-' Small Wiki Editor
-' Version 0.2a
+' Small Wiki Pad
+' Version 0.3a
 ' Copyright © 2015 Nonki Takahashi.  The MIT License.
-' Last update 2015-07-27
-' Program ID NVD371-2
+' Last update 2015-12-14
+' Program ID NVD371-3
 '
-title = "Small Wiki Editor 0.2a"
-GraphicsWindow.Title = title
-SB_Workaround()
+GraphicsWindow.Title = "Small Wiki Pad 0.3a"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 LT = "<"
-gw = 598
-gh = 428
-GraphicsWindow.Width = gw
-GraphicsWindow.Height = gh
-GraphicsWindow.BrushColor = "#333333"
-GraphicsWindow.FontName = "Segoe UI"
-GraphicsWindow.FontBold = "False"
-GraphicsWindow.PenWidth = 1
-GraphicsWindow.PenColor = "#666666"
-posX = "1=5;2=105;3=205;4=305;"
-item = "1=Wiki;2=HTML;3=Preview;"
-GraphicsWindow.DrawLine(posX[1], 5, posX[4], 5)
-For i = 1 To 3
-  menu[i] = Shapes.AddText(item[i])
-  Shapes.Move(menu[i], posX[i] + 5, 10)
-  GraphicsWindow.DrawLine(posX[i], 5, posX[i], 30)
-  hline[i] = Shapes.AddLine(posX[i], 30, posX[i + 1], 30)
-EndFor
-iLast = 1
-Shapes.HideShape(hline[iLast])
-GraphicsWindow.DrawLine(posX[4], 5, posX[4], 30)
-GraphicsWindow.DrawLine(posX[4], 30, gw - 5, 30)
-tbox = Controls.AddMultiLineTextBox(posX[1], 35)
-Controls.SetSize(tbox, gw - 10, gh - 40)
+SB_Workaround()
+Form()
 LoadWikiText()
 LoadHTMLText()
 Controls.SetTextBoxText(tbox, wikiText)
 GraphicsWindow.MouseDown = OnMouseDown
+GraphicsWindow.MouseMove = OnMouseMove
 While "True"
   If mouseDown Then
-    If 5 <= my And my < 30 Then
-      For i = 1 To 3
-        If posX[i] <= mx And mx < posX[i + 1] Then
-          If i <> iLast Then
-            Shapes.ShowShape(hline[iLast]) 
-            Shapes.HideShape(hline[i])
-            If i = 1 Or i = 2 Then
-              If iLast = 3 Then
-                Shapes_Remove()
-              EndIf
-              Controls.ShowControl(tbox)
-              If i = 1 Then
-                Controls.SetTextBoxText(tbox, wikiText)
-              ElseIf i = 2 Then
-                Controls.SetTextBoxText(tbox, htmlText)
-              EndIf
-            ElseIf i = 3 Then
-              Controls.HideControl(tbox)
-              ' initialize shapes
-              If shape = "" Then
-                Shapes_Init()
-              EndIf
-              ' add shapes
-              scale = 1
-              angle = 0
-              iMin = 1
-              iMax = Array.GetItemCount(shape)
-              Shapes_Add()
-            EndIf
-            iLast = i
+    Controls_TabClick()
+    If tabClicked Then
+      i = lastTabClicked
+      If i <> iLast Then
+        Shapes.ShowShape(hline[iLast]) 
+        Shapes.HideShape(hline[i])
+        If i = 1 Or i = 2 Then
+          If iLast = 3 Then
+            grp = group[iDocument]
+            iMin = grp["iMin"]
+            iMax = grp["iMax"]
+            shp = shape[iMin]
+            Shapes_Remove()
+            grp = group[iScrollBar]
+            iMin = grp["iMin"]
+            iMax = grp["iMax"]
+            Shapes_Remove()
+            shp = shape[iMin]
           EndIf
+          Controls.ShowControl(tbox)
+          If i = 1 Then
+            Controls.SetTextBoxText(tbox, wikiText)
+          ElseIf i = 2 Then
+            Controls.SetTextBoxText(tbox, htmlText)
+          EndIf
+        ElseIf i = 3 Then
+          Controls.HideControl(tbox)
+          ' initialize shapes
+          If iDocument = "" Then
+            Shapes_Init()
+            iDocument = nGroup
+          EndIf
+          ' add shapes
+          scale = 1
+          angle = 0
+          grp = group[iDocument]
+          shX = grp["x"]
+          shY = grp["y"]
+          iMin = grp["iMin"]
+          iMax = grp["iMax"]
+          Shapes_Add()
+          If iScrollBar = "" Then
+            x = gw - 12
+            y = 32
+            max = shHeight + 32
+            scale = 1
+            Controls_AddVScroll()
+            iScrollBar = nGroup
+          Else
+            grp = group[iScrollBar]
+            shX = grp["x"]
+            shY = grp["y"]
+            iMin = grp["iMin"]
+            iMax = grp["iMax"]
+            Shapes_Add()
+          EndIf
+          grp = group[iTabs]
+          shX = grp["x"]
+          shY = grp["y"]
+          iMin = grp["iMin"]
+          iMax = grp["iMax"]
+          Shapes_Remove()
+          Shapes_Add()
+          n = iMin - 1
+          For _i = 1 To 3
+            shp = shape[n+_i*3]
+            menu[_i] = shp["obj"]
+            shp = shape[n+_i*3+2]
+            hline[_i] = shp["obj"]
+          EndFor
+          Shapes.HideShape(hline[i])
         EndIf
-      EndFor 
+        iLast = i
+      EndIf
+    Else
+      Controls_ScrollBar()
     EndIf
     mouseDown = "False"
   EndIf
 EndWhile
+Sub Form
+  gw = 598
+  gh = 428
+  GraphicsWindow.Width = gw
+  GraphicsWindow.Height = gh
+  GraphicsWindow.BrushColor = "#333333"
+  GraphicsWindow.FontName = "Segoe UI"
+  GraphicsWindow.FontBold = "False"
+  GraphicsWindow.PenWidth = 1
+  GraphicsWindow.PenColor = "#666666"
+  posX = "1=5;2=105;3=205;4=305;"
+  item = "1=Wiki;2=HTML;3=Preview;"
+  scale = 1
+  Controls_AddTabs()
+  iTabs = nGroup
+  tbox = Controls.AddMultiLineTextBox(posX[1], 35)
+  Controls.SetSize(tbox, gw - 10, gh - 40)
+EndSub
 Sub OnMouseDown
+  dx = GraphicsWindow.MouseX
+  dy = GraphicsWindow.MouseY
+  mouseDown = "True"
+EndSub
+Sub OnMouseMove
   mx = GraphicsWindow.MouseX
   my = GraphicsWindow.MouseY
-  mouseDown = "True"
+  mouseMove = "True"
 EndSub
 Sub LoadWikiText
   wikiText = "*bold*" + CRLF
@@ -137,32 +180,233 @@ Sub Shapes_Init
   ' return shape - array of shapes
   shX = 10 ' x offset
   shY = 35 ' y offset
-  shape = ""
-  shape[1] = "func=text;x=0;y=0;fn=Segoe UI;fs=12;fb=True;text=bold;bc=#000000;"
-  shape[2] = "func=text;x=0;y=16;fn=Segoe UI;fs=12;fi=True;text=italics;bc=#000000;"
-  shape[3] = "func=text;x=0;y=32;fn=Segoe UI;fs=12;text=underline;bc=#000000;"
-  shape[4] = "func=rect;x=0;y=46;width=50;height=1;pc=#000000;pw=1;"
-  shape[5] = "func=text;x=0;y=58;fn=Segoe UI;fs=36;fb=True;text=Heading 1;bc=#000000;"
-  shape[6] = "func=text;x=0;y=98;fn=Segoe UI;fs=26;fb=True;text=Heading 2;bc=#000000;"
-  shape[7] = "func=text;x=0;y=128;fn=Segoe UI;fs=16;fb=True;text=Heading 3;bc=#000000;"
-  shape[8] = "func=ell;x=20;y=154;x2=50;y2=54;width=5;height=5;bc=#000000;pw=0;"
-  shape[9] = "func=text;x=30;y=148;fn=Segoe UI;fs=12;text=Bullet List;bc=#000000;"
-  shape[10] = "func=ell;x=40;y=170;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
-  shape[11] = "func=text;x=50;y=164;fn=Segoe UI;fs=12;text=Bullet List 2;bc=#000000;"
-  shape[12] = "func=text;x=18;y=180;fn=Segoe UI;fs=12;text=1. Number List;bc=#000000;"
-  shape[13] = "func=text;x=38;y=196;fn=Segoe UI;fs=12;text=1. Number List 2;bc=#000000;"
-  shape[14] = "func=img;x=0;y=212;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
-  shape[15] = "func=rect;x=0;y=464;width=200;height=54;bc=#FFFFFF;pc=#666666;pw=1;"
-  shape[16] = "func=rect;x=0;y=482;width=200;height=1;pc=#666666;pw=1;"
-  shape[17] = "func=rect;x=0;y=500;width=200;height=1;pc=#666666;pw=1;"
-  shape[18] = "func=rect;x=100;y=464;width=1;height=54;pc=#666666;pw=1;"
-  shape[19] = "func=text;x=2;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 1;bc=#000000;"
-  shape[20] = "func=text;x=102;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 2;bc=#000000;"
-  shape[21] = "func=text;x=2;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 1;bc=#000000;"
-  shape[22] = "func=text;x=102;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 2;bc=#000000;"
-  shape[23] = "func=text;x=2;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 1;bc=#000000;"
-  shape[24] = "func=text;x=102;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 2;bc=#000000;"
-  shape[25] = "func=rect;x=0;y=522;width=578;height=1;pc=#666666;pw=1;"
+  grp = ""
+  grp["x"] = shX
+  grp["y"] = shY
+  n = nShape
+  grp["iMin"] = n + 1
+  shape[n+1] = "func=text;x=0;y=0;fn=Segoe UI;fs=12;fb=True;text=bold;bc=#000000;"
+  shape[n+2] = "func=text;x=0;y=16;fn=Segoe UI;fs=12;fi=True;text=italics;bc=#000000;"
+  shape[n+3] = "func=text;x=0;y=32;fn=Segoe UI;fs=12;text=underline;bc=#000000;"
+  shape[n+4] = "func=rect;x=0;y=46;width=50;height=1;pc=#000000;pw=1;"
+  shape[n+5] = "func=text;x=0;y=58;fn=Segoe UI;fs=36;fb=True;text=Heading 1;bc=#000000;"
+  shape[n+6] = "func=text;x=0;y=98;fn=Segoe UI;fs=26;fb=True;text=Heading 2;bc=#000000;"
+  shape[n+7] = "func=text;x=0;y=128;fn=Segoe UI;fs=16;fb=True;text=Heading 3;bc=#000000;"
+  shape[n+8] = "func=ell;x=20;y=154;x2=50;y2=54;width=5;height=5;bc=#000000;pw=0;"
+  shape[n+9] = "func=text;x=30;y=148;fn=Segoe UI;fs=12;text=Bullet List;bc=#000000;"
+  shape[n+10] = "func=ell;x=40;y=170;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
+  shape[n+11] = "func=text;x=50;y=164;fn=Segoe UI;fs=12;text=Bullet List 2;bc=#000000;"
+  shape[n+12] = "func=text;x=18;y=180;fn=Segoe UI;fs=12;text=1. Number List;bc=#000000;"
+  shape[n+13] = "func=text;x=38;y=196;fn=Segoe UI;fs=12;text=1. Number List 2;bc=#000000;"
+  shape[n+14] = "func=img;x=0;y=212;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
+  shape[n+15] = "func=rect;x=0;y=464;width=200;height=54;bc=#FFFFFF;pc=#666666;pw=1;"
+  shape[n+16] = "func=rect;x=0;y=482;width=200;height=1;pc=#666666;pw=1;"
+  shape[n+17] = "func=rect;x=0;y=500;width=200;height=1;pc=#666666;pw=1;"
+  shape[n+18] = "func=rect;x=100;y=464;width=1;height=54;pc=#666666;pw=1;"
+  shape[n+19] = "func=text;x=2;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 1;bc=#000000;"
+  shape[n+20] = "func=text;x=102;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 2;bc=#000000;"
+  shape[n+21] = "func=text;x=2;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 1;bc=#000000;"
+  shape[n+22] = "func=text;x=102;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 2;bc=#000000;"
+  shape[n+23] = "func=text;x=2;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 1;bc=#000000;"
+  shape[n+24] = "func=text;x=102;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 2;bc=#000000;"
+  shape[n+25] = "func=rect;x=0;y=522;width=578;height=1;pc=#666666;pw=1;"
+  nShape = nShape + 25
+  grp["iMax"] = nShape
+  nGroup = nGroup + 1 ' number of group
+  group[nGroup] = grp
+EndSub
+Sub Controls_AddTabs
+  shX = 0 ' x offset
+  shY = 0 ' y offset
+  grp = ""
+  grp["x"] = shX
+  grp["y"] = shY
+  n = nShape
+  grp["iMin"] = n + 1
+  n = nShape
+  shape[n+1] = "func=rect;x=0;y=0;width="+gw+";height=32;pw=0;bc=#FFFFFF;"
+  shape[n+2] = "func=line;x="+posX[1]+";y=5;x1=0;y1=0;x2="+(posX[4]-posX[1])+";y2=0;pw=1;pc=#666666;"
+  For i = 1 To 3
+    shape[n+i*3] = "func=text;x="+(posX[i]+5)+";y=10;text="+item[i]+";fn=Segoe UI;fs=12;"
+    shape[n+i*3+1] = "func=line;x="+posX[i]+";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
+    shape[n+i*3+2] = "func=line;x="+posX[i]+";y=30;x1=0;y1=0;x2="+(posX[i+1]-posX[i])+";y2=0;pw=1;pc=#666666;"
+  EndFor
+  iLast = 1
+  shape[n+12] = "func=line;x="+posX[4]+";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
+  shape[n+13] = "func=line;x="+posX[4]+";y=30;x1=0;y1=0;x2="+(gw-5-posX[4])+";y2=0;pw=1;pc=#666666;"
+  nShape = nShape + 13
+  grp["iMax"] = nShape
+  nGroup = nGroup + 1 ' number of group
+  group[nGroup] = grp
+  iMin = grp["iMin"]
+  iMax = grp["iMax"]
+  Shapes_Add()
+  For i = 1 To 3
+    shp = shape[n+i*3]
+    menu[i] = shp["obj"]
+    shp = shape[n+i*3+2]
+    hline[i] = shp["obj"]
+  EndFor
+  Shapes.HideShape(hline[iLast])
+EndSub
+Sub DumpShape
+  For i = 1 To Array.GetItemCount(shape)
+    TextWindow.WriteLine(shape[i])
+  EndFor
+EndSub
+Sub Controls_AddVScroll
+  ' param x - left position x
+  ' param y - top position y
+  ' param max - maximum height
+  ' return group - array of shapes groups
+  ' return nShape - number of indices for shape array
+  ' return nGroup - number of indices for group array
+  shX = x
+  shY = y
+  grp = ""
+  grp["x"] = shX
+  grp["y"] = shY
+  n = nShape
+  grp["iMin"] = n + 1
+  shape[n+1] = "func=rect;x=0;y=0;width=12;height="+(gh-y)+";pw=0;bc=#99CCCCCC;"
+  shape[n+2] = "func=rect;x=0;y=0;width=12;height=12;pw=0;bc=#CCCCCC;"
+  shape[n+3] = "func=line;x=3;y=4;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+  shape[n+4] = "func=line;x=6;y=4;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+  shape[n+5] = "func=rect;x=0;y="+(gh-12-y)+";width=12;height=12;pw=0;bc=#CCCCCC;"
+  shape[n+6] = "func=line;x=3;y="+(gh-8-y)+";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+  shape[n+7] = "func=line;x=6;y="+(gh-8-y)+";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+  th = (gh - 24) * gh / max ' thumb heignt
+  shape[n+8] = "func=rect;x=0;y=12;width=12;height="+th+";pw=0;bc=#999999;"
+  nShape = nShape + 8
+  grp["iMax"] = nShape
+  nGroup = nGroup + 1       ' number of group
+  group[nGroup] = grp
+  yminThumb = 12 + y
+  ymaxThumb = (gh - 12 - y) - th + y
+  yminPic = -gh
+  ymaxPic = 35
+  ph = gh * 2               ' picture height
+  iMin = grp["iMin"]
+  iMax = grp["iMax"]
+  scale = 1
+  Shapes_Add()
+EndSub
+Sub Controls_TabClick
+  tabClicked = "False"
+  If 5 <= dy And dy < 30 Then
+    For i = 1 To 3
+      If posX[i] <= dx And dx < posX[i + 1] Then
+        tabClicked = "True"
+        lastTabClicked = i
+      EndIf
+    EndFor 
+  EndIf
+EndSub
+Sub Controls_ScrollBar
+  grp = group[iScrollBar]
+  iMin = grp["iMin"]
+  shX = grp["x"]
+  shY = grp["y"]
+  shp = shape[iMin]     ' vertical scroll bar
+  x1 = shX + shp["rx"]
+  x2 = shX + shp["rx"] + shp["width"]
+  y1 = shY + shp["ry"]
+  y2 = shY + shp["ry"] + shp["height"]
+  If x1 <= dx And dx <= x2 And y1 <= dy And dy <= y2 Then
+    shp = shape[iMin+1] ' line up button
+    y1 = shY + shp["ry"]
+    y2 = shY + shp["ry"] + shp["height"]
+    shp = shape[iMin+4] ' line down button
+    y3 = shY + shp["ry"]
+    y4 = shY + shp["ry"] + shp["height"]
+    shp = shape[iMin+7] ' thumb
+    y5 = shY + shp["ry"]
+    y6 = shY + shp["ry"] + shp["height"]
+    iMax = iMin+7
+    iMin = iMax
+    y = shY
+    yLast = y
+    If y1 <= dy And dy <= y2 Then
+      ' line up
+      x = shX
+      y = shY - (ymaxThumb - yminThumb) / 10
+      If shp["ry"] + y < yminThumb Then
+        y = yminThumb - shp["ry"]
+      EndIf
+    ElseIf y3 <= dy And dy <= y4 Then
+      ' line down
+      x = shX
+      y = shY + (ymaxThumb - yminThumb) / 10
+      If ymaxThumb < shp["ry"] + y Then
+        y = ymaxThumb - shp["ry"]
+      EndIf
+    ElseIf y5 <= dy And dy <= y6 Then
+      ' thumb truck
+      yLast = shY
+      myLast = dy
+      While Mouse.IsLeftButtonDown
+        If mouseMove Then
+          x = shX
+          y = my - myLast
+          If ymaxThumb < shp["ry"] + y Then
+            y = ymaxThumb - shp["ry"]
+          ElseIf shp["ry"] + y < yminThumb Then
+            y = yminThumb - shp["ry"]
+          EndIf
+          If y <> yLast Then
+            shp["ry"] = shp["ry"] + y
+            shape[iMin] = shp
+            yMove = y
+            y = 0
+            Shapes_Move()       ' move thumb
+            Controls_Scroll()
+            grp = group[iScrollBar]
+            iMin = grp["iMin"]
+            iMax = iMin+7
+            iMin = iMax
+            shX = grp["x"]
+            shY = grp["y"]
+            shp = shape[iMin]   ' vertical scroll bar
+            yLast = y
+          EndIf
+          myLast = my
+          mouseMove = "False"
+        EndIf
+      EndWhile
+    ElseIf dy < y5 Then
+      ' page up
+      x = shX
+      y = shY - (ymaxThumb - yminThumb)
+      If shp["ry"] + y < yminThumb Then
+        y = yminThumb - shp["ry"]
+      EndIf
+    ElseIf y6 < dy Then
+      ' page down
+      x = shX
+      y = shY + (ymaxThumb - yminThumb)
+      If ymaxThumb < shp["ry"] + y Then
+        y = ymaxThumb - shp["ry"]
+      EndIf
+    EndIf
+    If y <> yLast Then
+      shp["ry"] = shp["ry"] + y
+      shape[iMin] = shp
+      yMove = y
+      y = 0
+      Shapes_Move() ' move thumb
+      Controls_Scroll()
+    EndIf
+  EndIf
+EndSub
+Sub Controls_Scroll
+  grp = group[iDocument]
+  x = grp["x"]
+  y = grp["y"] - yMove * gh / (ymaxThumb - yminThumb)
+  iMin = grp["iMin"]
+  iMax = grp["iMax"]
+  Shapes_Move()
+  grp["y"] = y
+  group[iDocument] = grp
 EndSub
 Sub Math_CartesianToPolar
   ' Math | convert cartesian coodinate to polar coordinate
