@@ -1,10 +1,10 @@
 ' Small Wiki Pad
-' Version 0.3a
+' Version 0.31a
 ' Copyright © 2015 Nonki Takahashi.  The MIT License.
-' Last update 2015-12-14
-' Program ID NVD371-3
+' Last update 2015-12-30
+' Program ID NVD371-4
 '
-GraphicsWindow.Title = "Small Wiki Pad 0.3a"
+GraphicsWindow.Title = "Small Wiki Pad 0.31a"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 LT = "<"
 SB_Workaround()
@@ -18,84 +18,104 @@ While "True"
   If mouseDown Then
     Controls_TabClick()
     If tabClicked Then
-      i = lastTabClicked
-      If i <> iLast Then
-        Shapes.ShowShape(hline[iLast]) 
-        Shapes.HideShape(hline[i])
-        If i = 1 Or i = 2 Then
-          If iLast = 3 Then
-            grp = group[iDocument]
-            iMin = grp["iMin"]
-            iMax = grp["iMax"]
-            shp = shape[iMin]
-            Shapes_Remove()
-            grp = group[iScrollBar]
-            iMin = grp["iMin"]
-            iMax = grp["iMax"]
-            Shapes_Remove()
-            shp = shape[iMin]
-          EndIf
-          Controls.ShowControl(tbox)
-          If i = 1 Then
-            Controls.SetTextBoxText(tbox, wikiText)
-          ElseIf i = 2 Then
-            Controls.SetTextBoxText(tbox, htmlText)
-          EndIf
-        ElseIf i = 3 Then
-          Controls.HideControl(tbox)
-          ' initialize shapes
-          If iDocument = "" Then
-            Shapes_Init()
-            iDocument = nGroup
-          EndIf
-          ' add shapes
-          scale = 1
-          angle = 0
-          grp = group[iDocument]
-          shX = grp["x"]
-          shY = grp["y"]
-          iMin = grp["iMin"]
-          iMax = grp["iMax"]
-          Shapes_Add()
-          If iScrollBar = "" Then
-            x = gw - 12
-            y = 32
-            max = shHeight + 32
-            scale = 1
-            Controls_AddVScroll()
-            iScrollBar = nGroup
-          Else
-            grp = group[iScrollBar]
-            shX = grp["x"]
-            shY = grp["y"]
-            iMin = grp["iMin"]
-            iMax = grp["iMax"]
-            Shapes_Add()
-          EndIf
-          grp = group[iTabs]
-          shX = grp["x"]
-          shY = grp["y"]
-          iMin = grp["iMin"]
-          iMax = grp["iMax"]
-          Shapes_Remove()
-          Shapes_Add()
-          n = iMin - 1
-          For _i = 1 To 3
-            shp = shape[n+_i*3]
-            menu[_i] = shp["obj"]
-            shp = shape[n+_i*3+2]
-            hline[_i] = shp["obj"]
-          EndFor
-          Shapes.HideShape(hline[i])
-        EndIf
-        iLast = i
-      EndIf
+      ChangeTab()
     Else
       Controls_ScrollBar()
     EndIf
     mouseDown = "False"
   EndIf
 EndWhile
+Sub ChangeTab
+  i = lastTabClicked
+  If i <> iLast Then
+    Shapes.ShowShape(hline[iLast]) 
+    Shapes.HideShape(hline[i])
+    If i = 1 Or i = 2 Then
+      If iLast = 3 Then
+        grp = group[iDocument]
+        iMin = grp["iMin"]
+        iMax = grp["iMax"]
+        Shapes_Remove()
+        grp["y"] = 10
+        group[iDocument] = grp
+        grp = group[iScrollBar]
+        iMin = grp["iMin"]
+        iMax = grp["iMax"]
+        Shapes_Remove()
+        grp = group[iThumb]
+        iMin = grp["iMin"]
+        iMax = grp["iMax"]
+        Shapes_Remove()
+        grp["y"] = 32 + 12
+        group[iThumb] = grp
+      EndIf
+      Controls.ShowControl(tbox)
+      If i = 1 Then
+        Controls.SetTextBoxText(tbox, wikiText)
+      ElseIf i = 2 Then
+        Controls.SetTextBoxText(tbox, htmlText)
+      EndIf
+    ElseIf i = 3 Then
+      Controls.HideControl(tbox)
+      ' initialize shapes
+      If iDocument = "" Then
+        Shapes_Init()
+        iDocument = nGroup
+      EndIf
+      ' add shapes
+      scale = 1
+      angle = 0
+      grp = group[iDocument]
+      shX = grp["x"]
+      shY = grp["y"]
+      iMin = grp["iMin"]
+      iMax = grp["iMax"]
+      Shapes_Add()
+      ph = shHeight             ' picture height
+      ymaxPic = 32 + shY
+      yminPic = gh - ph
+      x = shX
+      y = ymaxPic
+      Shapes_Move()
+      If iScrollBar = "" Then
+        x = gw - 12
+        y = 32
+        height = gh - y
+        scale = 1
+        Controls_AddVScroll()
+      Else
+        grp = group[iScrollBar]
+        shX = grp["x"]
+        shY = grp["y"]
+        iMin = grp["iMin"]
+        iMax = grp["iMax"]
+        Shapes_Add()
+        grp = group[iThumb]
+        shX = grp["x"]
+        shY = grp["y"]
+        iMin = grp["iMin"]
+        iMax = grp["iMax"]
+        Shapes_Add()
+      EndIf
+      grp = group[iTabs]
+      shX = grp["x"]
+      shY = grp["y"]
+      iMin = grp["iMin"]
+      iMax = grp["iMax"]
+      Shapes_Remove()
+      Shapes_Add()
+      n = iMin - 1
+      For _i = 1 To 3
+        shp = shape[n+_i*3]
+        menu[_i] = shp["obj"]
+        shp = shape[n+_i*3+2]
+        hline[_i] = shp["obj"]
+      EndFor
+      Shapes.HideShape(hline[i])
+    EndIf
+    iLast = i
+  EndIf
+EndSub
 Sub Form
   gw = 598
   gh = 428
@@ -142,7 +162,7 @@ Sub LoadWikiText
   wikiText = wikiText + "----"
 EndSub
 Sub LoadHTMLText
-  htmlText = "<html>" + CRLF
+  htmlText = LT + "html>" + CRLF
   htmlText = htmlText + LT + "body>" + CRLF
   htmlText = htmlText + LT + "p>" + CRLF
   htmlText = htmlText + LT + "strong>bold" + LT + "/strong>" + LT + "br>" + CRLF
@@ -179,7 +199,7 @@ Sub Shapes_Init
   ' return shX, shY - current position of shapes
   ' return shape - array of shapes
   shX = 10 ' x offset
-  shY = 35 ' y offset
+  shY = 10 ' y offset
   grp = ""
   grp["x"] = shX
   grp["y"] = shY
@@ -223,7 +243,6 @@ Sub Controls_AddTabs
   grp["y"] = shY
   n = nShape
   grp["iMin"] = n + 1
-  n = nShape
   shape[n+1] = "func=rect;x=0;y=0;width="+gw+";height=32;pw=0;bc=#FFFFFF;"
   shape[n+2] = "func=line;x="+posX[1]+";y=5;x1=0;y1=0;x2="+(posX[4]-posX[1])+";y2=0;pw=1;pc=#666666;"
   For i = 1 To 3
@@ -249,18 +268,14 @@ Sub Controls_AddTabs
   EndFor
   Shapes.HideShape(hline[iLast])
 EndSub
-Sub DumpShape
-  For i = 1 To Array.GetItemCount(shape)
-    TextWindow.WriteLine(shape[i])
-  EndFor
-EndSub
 Sub Controls_AddVScroll
   ' param x - left position x
   ' param y - top position y
-  ' param max - maximum height
+  ' param height - height
   ' return group - array of shapes groups
   ' return nShape - number of indices for shape array
   ' return nGroup - number of indices for group array
+  ' add vertical scroll bar
   shX = x
   shY = y
   grp = ""
@@ -268,39 +283,54 @@ Sub Controls_AddVScroll
   grp["y"] = shY
   n = nShape
   grp["iMin"] = n + 1
-  shape[n+1] = "func=rect;x=0;y=0;width=12;height="+(gh-y)+";pw=0;bc=#99CCCCCC;"
+  shape[n+1] = "func=rect;x=0;y=0;width=12;height="+height+";pw=0;bc=#99CCCCCC;"
   shape[n+2] = "func=rect;x=0;y=0;width=12;height=12;pw=0;bc=#CCCCCC;"
   shape[n+3] = "func=line;x=3;y=4;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
   shape[n+4] = "func=line;x=6;y=4;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
-  shape[n+5] = "func=rect;x=0;y="+(gh-12-y)+";width=12;height=12;pw=0;bc=#CCCCCC;"
-  shape[n+6] = "func=line;x=3;y="+(gh-8-y)+";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
-  shape[n+7] = "func=line;x=6;y="+(gh-8-y)+";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
-  th = (gh - 24) * gh / max ' thumb heignt
-  shape[n+8] = "func=rect;x=0;y=12;width=12;height="+th+";pw=0;bc=#999999;"
-  nShape = nShape + 8
+  shape[n+5] = "func=rect;x=0;y="+(height-12)+";width=12;height=12;pw=0;bc=#CCCCCC;"
+  shape[n+6] = "func=line;x=3;y="+(height-8)+";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+  shape[n+7] = "func=line;x=6;y="+(height-8)+";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+  nShape = nShape + 7
   grp["iMax"] = nShape
   nGroup = nGroup + 1       ' number of group
   group[nGroup] = grp
-  yminThumb = 12 + y
-  ymaxThumb = (gh - 12 - y) - th + y
-  yminPic = -gh
-  ymaxPic = 35
-  ph = gh * 2               ' picture height
+  iScrollBar = nGroup
   iMin = grp["iMin"]
   iMax = grp["iMax"]
   scale = 1
   Shapes_Add()
+  ' add thumb
+  th = (height - 24) * height / ph ' thumb heignt
+  shX = x
+  shY = y + 12
+  grp = ""
+  grp["x"] = shX
+  grp["y"] = shY
+  n = nShape
+  grp["iMin"] = n + 1
+  shape[n+1] = "func=rect;x=0;y=0;width=12;height="+th+";pw=0;bc=#999999;"
+  nShape = nShape + 1
+  grp["iMax"] = nShape
+  nGroup = nGroup + 1       ' number of group
+  group[nGroup] = grp
+  iThumb = nGroup
+  iMin = grp["iMin"]
+  iMax = grp["iMax"]
+  Shapes_Add()
+  yminThumb = y + 12
+  ymaxThumb = y + height - 12 - th
+  hPage = (ph - ymaxPic) / ph * (ymaxThumb - yminThumb) ' page height in scroll bar
 EndSub
-Sub Controls_TabClick
-  tabClicked = "False"
-  If 5 <= dy And dy < 30 Then
-    For i = 1 To 3
-      If posX[i] <= dx And dx < posX[i + 1] Then
-        tabClicked = "True"
-        lastTabClicked = i
-      EndIf
-    EndFor 
-  EndIf
+Sub Controls_Scroll
+  ' param yMove - relative thumb move
+  grp = group[iDocument]
+  x = grp["x"]
+  y = grp["y"] - yMove * gh / (ymaxThumb - yminThumb)
+  iMin = grp["iMin"]
+  iMax = grp["iMax"]
+  Shapes_Move()
+  grp["y"] = y
+  group[iDocument] = grp
 EndSub
 Sub Controls_ScrollBar
   grp = group[iScrollBar]
@@ -319,55 +349,50 @@ Sub Controls_ScrollBar
     shp = shape[iMin+4] ' line down button
     y3 = shY + shp["ry"]
     y4 = shY + shp["ry"] + shp["height"]
-    shp = shape[iMin+7] ' thumb
+    grp = group[iThumb] ' thumb
+    iMin = grp["iMin"]
+    iMax = grp["iMax"]
+    shX = grp["x"]
+    shY = grp["y"]
+    shp = shape[iMin]
     y5 = shY + shp["ry"]
     y6 = shY + shp["ry"] + shp["height"]
-    iMax = iMin+7
-    iMin = iMax
-    y = shY
-    yLast = y
+    y = y5
+    yLast = y5
     If y1 <= dy And dy <= y2 Then
       ' line up
       x = shX
-      y = shY - (ymaxThumb - yminThumb) / 10
-      If shp["ry"] + y < yminThumb Then
-        y = yminThumb - shp["ry"]
+      y = y5 - hPage / 25
+      If y < yminThumb Then
+        y = yminThumb
       EndIf
     ElseIf y3 <= dy And dy <= y4 Then
       ' line down
       x = shX
-      y = shY + (ymaxThumb - yminThumb) / 10
-      If ymaxThumb < shp["ry"] + y Then
-        y = ymaxThumb - shp["ry"]
+      y = y5 + hPage / 25
+      If ymaxThumb < y Then
+        y = ymaxThumb
       EndIf
     ElseIf y5 <= dy And dy <= y6 Then
       ' thumb truck
-      yLast = shY
       myLast = dy
+      myThumb = dy - y5
       While Mouse.IsLeftButtonDown
         If mouseMove Then
           x = shX
-          y = my - myLast
-          If ymaxThumb < shp["ry"] + y Then
-            y = ymaxThumb - shp["ry"]
-          ElseIf shp["ry"] + y < yminThumb Then
-            y = yminThumb - shp["ry"]
+          y = my - myThumb
+          If ymaxThumb < y Then
+            y = ymaxThumb
+          ElseIf y < yminThumb Then
+            y = yminThumb
           EndIf
           If y <> yLast Then
-            shp["ry"] = shp["ry"] + y
-            shape[iMin] = shp
-            yMove = y
-            y = 0
-            Shapes_Move()       ' move thumb
-            Controls_Scroll()
-            grp = group[iScrollBar]
-            iMin = grp["iMin"]
-            iMax = iMin+7
-            iMin = iMax
-            shX = grp["x"]
-            shY = grp["y"]
-            shp = shape[iMin]   ' vertical scroll bar
+            yMove = y - yLast
             yLast = y
+            Shapes_Move()       ' move thumb
+            grp["y"] = shY
+            group[iThumb] = grp ' thumb
+            Controls_Scroll()
           EndIf
           myLast = my
           mouseMove = "False"
@@ -376,37 +401,38 @@ Sub Controls_ScrollBar
     ElseIf dy < y5 Then
       ' page up
       x = shX
-      y = shY - (ymaxThumb - yminThumb)
-      If shp["ry"] + y < yminThumb Then
-        y = yminThumb - shp["ry"]
+      y = y5 - hPage
+      If y < yminThumb Then
+        y = yminThumb
       EndIf
     ElseIf y6 < dy Then
       ' page down
       x = shX
-      y = shY + (ymaxThumb - yminThumb)
-      If ymaxThumb < shp["ry"] + y Then
-        y = ymaxThumb - shp["ry"]
+      y = y5 + hPage
+      If ymaxThumb < y Then
+        y = ymaxThumb
       EndIf
     EndIf
     If y <> yLast Then
-      shp["ry"] = shp["ry"] + y
-      shape[iMin] = shp
-      yMove = y
-      y = 0
-      Shapes_Move() ' move thumb
+      yMove = y - yLast
+      Shapes_Move()       ' move thumb
+      grp["y"] = shY
+      group[iThumb] = grp ' thumb
       Controls_Scroll()
     EndIf
   EndIf
 EndSub
-Sub Controls_Scroll
-  grp = group[iDocument]
-  x = grp["x"]
-  y = grp["y"] - yMove * gh / (ymaxThumb - yminThumb)
-  iMin = grp["iMin"]
-  iMax = grp["iMax"]
-  Shapes_Move()
-  grp["y"] = y
-  group[iDocument] = grp
+Sub Controls_TabClick
+  tabClicked = "False"
+  If 5 <= dy And dy < 30 Then
+    For i = 1 To 3
+      If posX[i] <= dx And dx < posX[i + 1] Then
+        tabClicked = "True"
+        lastTabClicked = i
+        i = 3 ' exit for
+      EndIf
+    EndFor 
+  EndIf
 EndSub
 Sub Math_CartesianToPolar
   ' Math | convert cartesian coodinate to polar coordinate
@@ -588,6 +614,11 @@ Sub Shapes_CalcWidthAndHeight
       EndIf
     EndIf
     shape[i] = shp
+  EndFor
+EndSub
+Sub Shapes_Dump
+  For i = 1 To Array.GetItemCount(shape)
+    TextWindow.WriteLine(shape[i])
   EndFor
 EndSub
 Sub Shapes_Move
