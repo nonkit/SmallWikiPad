@@ -1,20 +1,19 @@
 Small Wiki Pad
 ==============
 
-Version 0.3a
+Version 0.31a
 
 RELEASE NOTES
 
 - This version is for demo.
-- #1 Scroll bar supported.
-- Program name changed (from Small Wiki Editor).
+- Minor change.
 
 Known Issues
 
 - Can't edit wiki.
 - Preview doesn't return to its original position once scrolled.
 - Thumb may be too tall.
-- Thumb drag doesn't work at the first time.
-- Line up (top) arrow button works in reverse.
+- Thumb drag doesn't move itself.
 - Scroll bar may be too thin.
-- When selecting [Preview] tab again, preview is already scrolled.
+- Thumb somtimes isn't removed even if [Wiki] or [HTML] tab selected.
+- Preview document somtimes is duplicated.
