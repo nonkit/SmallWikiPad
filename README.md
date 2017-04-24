@@ -1,5 +1,4 @@
-Small Wiki Pad
-==============
+# Small Wiki Pad
 
 Version 0.31a
 
