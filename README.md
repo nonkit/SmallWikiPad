@@ -1,3 +1,4 @@
+![icon](img/WikiPadIcon.png)
 # Small Wiki Pad
 
 Version 0.31a
