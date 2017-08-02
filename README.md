@@ -1,7 +1,7 @@
 ![icon](img/WikiPadIcon.png)
 # Small Wiki Pad
 
-Version 0.31a
+Version 0.41a
 
 RELEASE NOTES
 
@@ -10,10 +10,7 @@ RELEASE NOTES
 
 Known Issues
 
-- Can't edit wiki.
-- Preview doesn't return to its original position once scrolled.
-- Thumb may be too tall.
-- Thumb drag doesn't move itself.
-- Scroll bar may be too thin.
-- Thumb somtimes isn't removed even if [Wiki] or [HTML] tab selected.
-- Preview document somtimes is duplicated.
+- #3 Can't edit wiki.
+- #13 Preview scrolls too much.
+- #14 Preview picture and thumb sometimes disappear.
+- #15 Same amount scroll with page and line.
