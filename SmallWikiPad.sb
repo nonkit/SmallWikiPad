@@ -1,10 +1,10 @@
 ' Small Wiki Pad
-' Version 0.31a
-' Copyright © 2015 Nonki Takahashi.  The MIT License.
-' Last update 2015-12-30
+' Version 0.4a
+' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
+' Last update 2017-08-02
 ' Program ID NVD371-4
 '
-GraphicsWindow.Title = "Small Wiki Pad 0.31a"
+GraphicsWindow.Title = "Small Wiki Pad 0.4a"
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
 LT = "<"
 SB_Workaround()
