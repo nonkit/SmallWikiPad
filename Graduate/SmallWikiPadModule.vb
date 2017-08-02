@@ -1,15 +1,18 @@
 Module SmallWikiPadModule
-    Dim CRLF, LT, tbox, wikiText, dx, mx, mouseDown, tabClicked, i, lastTabClicked, iLast, hline, grp, group, iDocument, iMin, iMax, iScrollBar, iThumb, htmlText, nGroup, scale, angle, shX, shY, ph, shHeight, ymaxPic, yminPic, gh, x, y, gw, height, iTabs, n, _i, shp, shape, menu, posX, item, dy, my, mouseMove, nShape, th, yminThumb, ymaxThumb, hPage, yMove, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, r, a, ox, oy, alpha, color, silverlight, msWait, s, fs, shAngle, _cx, param, _cy, xmin, xmax, ymin, ymax, shWidth, _x, _y, cx, cy As Primitive
+    Dim CR, LF, LT, WQ, name, tbox, wikiText, dx, mx, mouseDown, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, iScrollbar, iThumb, htmlText, scale, angle, nGroup, ph, shHeight, ymaxPic, shY, yminPic, gh, shX, gw, height, iTabs, n, iMin, _i, shp, shape, menu, posX, item, dy, my, mouseMove, shWidth, s, silverlight, fs, alpha, group, j, gx, gy, _a, scaleX, cx, _x, _y, th, yminThumb, ymaxThumb, hPage, yMove, x1, x2, y1, y2, y3, y4, iMax, y5, y6, yLast, myLast, myThumb, r, a, ox, oy, color, msWait, _cx, param, _cy, xmin, xmax, ymin, ymax, cy As Primitive
     Sub Main()
         ' Small Wiki Pad
-        ' Version 0.31a
-        ' Copyright © 2015 Nonki Takahashi.  The MIT License.
-        ' Last update 2015-12-30
-        ' Program ID NVD371-4
+        ' Version 0.4a
+        ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
+        ' Last update 2017-08-02
+        ' Program ID NVD371-5
         '
-        GraphicsWindow.Title = "Small Wiki Pad 0.31a"
-        CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+        GraphicsWindow.Title = "Small Wiki Pad 0.4a"
+        CR = Text.GetCharacter(13)
+        LF = Text.GetCharacter(10)
         LT = "<"
+        WQ = Text.GetCharacter(34)
+        name = "" ' dummy
         SB_Workaround()
         Form()
         LoadWikiText()
@@ -17,7 +20,7 @@ Module SmallWikiPadModule
         Controls.SetTextBoxText(tbox, wikiText)
         AddHandler GraphicsWindow.MouseDown, AddressOf OnMouseDown
         AddHandler GraphicsWindow.MouseMove, AddressOf OnMouseMove
-        While true
+        While True
             If mouseDown Then
                 Controls_TabClick()
                 If tabClicked Then
@@ -25,33 +28,30 @@ Module SmallWikiPadModule
                 Else
                     Controls_ScrollBar()
                 End If
-                mouseDown = false
+                mouseDown = False
             End If
         End While
     End Sub
     Sub ChangeTab()
         i = lastTabClicked
         If i <> iLast Then
+            Stack.PushValue("local", i)
             Shapes.ShowShape(hline(iLast))
             Shapes.HideShape(hline(i))
             If (i = 1) Or (i = 2) Then
                 If iLast = 3 Then
-                    grp = group(iDocument)
-                    iMin = grp("iMin")
-                    iMax = grp("iMax")
-                    Shapes_Remove()
-                    grp("y") = 10
-                    group(iDocument) = grp
-                    grp = group(iScrollBar)
-                    iMin = grp("iMin")
-                    iMax = grp("iMax")
-                    Shapes_Remove()
-                    grp = group(iThumb)
-                    iMin = grp("iMin")
-                    iMax = grp("iMax")
-                    Shapes_Remove()
-                    grp("y") = 32 + 12
-                    group(iThumb) = grp
+                    i = iDocument
+                    Group_Hide()
+                    x = grp("x")
+                    y = 10
+                    Group_Move()
+                    i = iScrollbar
+                    Group_Hide()
+                    i = iThumb
+                    Group_Hide()
+                    x = grp("x")
+                    y = 32 + 12
+                    Group_Move()
                 End If
                 Controls.ShowControl(tbox)
                 If i = 1 Then
@@ -64,60 +64,46 @@ Module SmallWikiPadModule
                 ' initialize shapes
                 If iDocument = CType("", Primitive) Then
                     Shapes_Init()
+                    scale = 1
+                    angle = 0
+                    ' add shapes
+                    Group_Add()
                     iDocument = nGroup
+                    ph = shHeight ' picture height
+                    ymaxPic = 32 + shY
+                    yminPic = gh - ph
+                    x = shX
+                    y = ymaxPic
+                    i = iDocument
+                    Group_Move()
+                Else
+                    i = iDocument
+                    Group_Show()
                 End If
-                ' add shapes
-                scale = 1
-                angle = 0
-                grp = group(iDocument)
-                shX = grp("x")
-                shY = grp("y")
-                iMin = grp("iMin")
-                iMax = grp("iMax")
-                Shapes_Add()
-                ph = shHeight ' picture height
-                ymaxPic = 32 + shY
-                yminPic = gh - ph
-                x = shX
-                y = ymaxPic
-                Shapes_Move()
-                If iScrollBar = CType("", Primitive) Then
+                If iScrollbar = CType("", Primitive) Then
                     x = gw - 12
                     y = 32
                     height = gh - y
                     scale = 1
                     Controls_AddVScroll()
                 Else
-                    grp = group(iScrollBar)
-                    shX = grp("x")
-                    shY = grp("y")
-                    iMin = grp("iMin")
-                    iMax = grp("iMax")
-                    Shapes_Add()
-                    grp = group(iThumb)
-                    shX = grp("x")
-                    shY = grp("y")
-                    iMin = grp("iMin")
-                    iMax = grp("iMax")
-                    Shapes_Add()
+                    i = iScrollbar
+                    Group_Show()
+                    i = iThumb
+                    Group_Show()
                 End If
-                grp = group(iTabs)
-                shX = grp("x")
-                shY = grp("y")
-                iMin = grp("iMin")
-                iMax = grp("iMax")
-                Shapes_Remove()
-                Shapes_Add()
-                n = iMin - 1
+                i = iTabs
+                Group_Remove()
+                Group_Add()
                 For _i = 1 To 3
-                    shp = shape(n + (_i * 3))
+                    shp = shape(_i * 3)
                     menu(_i) = shp("obj")
-                    shp = shape(n + (_i * 3) + 2)
+                    shp = shape(_i * 3 + 2)
                     hline(_i) = shp("obj")
                 Next
                 Shapes.HideShape(hline(i))
             End If
-            iLast = i
+            iLast = Stack.PopValue("local")
         End If
     End Sub
     Sub Form()
@@ -149,54 +135,242 @@ Module SmallWikiPadModule
         mouseMove = true
     End Sub
     Sub LoadWikiText()
-        wikiText = "*bold*" + CRLF
-        wikiText = wikiText + "_italics_" + CRLF
-        wikiText = wikiText + "+underline+" + CRLF
-        wikiText = wikiText + "! Heading 1" + CRLF
-        wikiText = wikiText + "!! Heading 2" + CRLF
-        wikiText = wikiText + "!!! Heading 3" + CRLF
-        wikiText = wikiText + "* Bullet List" + CRLF
-        wikiText = wikiText + "** Bullet List 2" + CRLF
-        wikiText = wikiText + "# Number List" + CRLF
-        wikiText = wikiText + "## Number List 2" + CRLF
-        wikiText = wikiText + "[image:Turtle.png]" + CRLF
-        wikiText = wikiText + "||Table Heading 1||Table Heading 2||" + CRLF
-        wikiText = wikiText + "|Row 1 - Cell 1|Row 1 - Cell 2|" + CRLF
-        wikiText = wikiText + "|Row 2 - Cell 1|Row 2 - Cell 2|" + CRLF
-        wikiText = wikiText + "----"
+        wikiText = "**bold**" + LT + "br>" + CR + LF
+        wikiText = wikiText + "_italics_" + LT + "br>" + CR + LF
+        wikiText = wikiText + "# Heading 1" + CR + LF
+        wikiText = wikiText + "## Heading 2" + CR + LF
+        wikiText = wikiText + "### Heading 3" + CR + LF
+        wikiText = wikiText + "- Bullet List" + CR + LF
+        wikiText = wikiText + "   - Bullet List 2" + CR + LF
+        wikiText = wikiText + "1. Number List" + CR + LF
+        wikiText = wikiText + "   1. Number List 2" + CR + LF
+        wikiText = wikiText + "![](Turtle.png)" + CR + LF
+        wikiText = wikiText + "|Table Heading 1|Table Heading 2|" + CR + LF
+        wikiText = wikiText + "|---|---|" + CR + LF
+        wikiText = wikiText + "|Row 1 - Cell 1|Row 1 - Cell 2|" + CR + LF
+        wikiText = wikiText + "|Row 2 - Cell 1|Row 2 - Cell 2|" + CR + LF
+        wikiText = wikiText + "___"
     End Sub
     Sub LoadHTMLText()
-        htmlText = LT + "html>" + CRLF
-        htmlText = htmlText + LT + "body>" + CRLF
-        htmlText = htmlText + LT + "p>" + CRLF
-        htmlText = htmlText + LT + "strong>bold" + LT + "/strong>" + LT + "br>" + CRLF
-        htmlText = htmlText + LT + "em>italics" + LT + "/em>" + LT + "br>" + CRLF
-        htmlText = htmlText + LT + "span style='text-decoration:underline;'>underline" + LT + "/span>" + CRLF
-        htmlText = htmlText + LT + "/p>" + CRLF
-        htmlText = htmlText + LT + "h1>Heading 1" + LT + "/h1>" + CRLF
-        htmlText = htmlText + LT + "h2>Heading 2" + LT + "/h2>" + CRLF
-        htmlText = htmlText + LT + "h3>Heading 3" + LT + "/h3>" + CRLF
-        htmlText = htmlText + LT + "ul>" + CRLF
-        htmlText = htmlText + LT + "li>Bullet List" + LT + "/li>" + LT + "br>" + CRLF
-        htmlText = htmlText + LT + "ul>" + CRLF
-        htmlText = htmlText + LT + "li>Bullet List 2" + LT + "/li>" + CRLF
-        htmlText = htmlText + LT + "/ul>" + CRLF
-        htmlText = htmlText + LT + "/ul>" + CRLF
-        htmlText = htmlText + LT + "ol>" + CRLF
-        htmlText = htmlText + LT + "li>Number List" + LT + "/li>" + LT + "br>" + CRLF
-        htmlText = htmlText + LT + "ol>" + CRLF
-        htmlText = htmlText + LT + "li>Number List 2" + LT + "/li>" + CRLF
-        htmlText = htmlText + LT + "/ol>" + CRLF
-        htmlText = htmlText + LT + "/ol>" + CRLF
-        htmlText = htmlText + LT + "p>" + LT + "img src='http://www.nonkit.com/smallbasic.files/Turtle.png'>" + LT + "/p>" + CRLF
-        htmlText = htmlText + LT + "table border=1>" + CRLF
-        htmlText = htmlText + LT + "tr>" + LT + "th>Table Heading 1" + LT + "/th>" + LT + "th>Table Heading 2" + LT + "/th>" + LT + "/tr>" + CRLF
-        htmlText = htmlText + LT + "tr>" + LT + "td>Row 1-Cell 1" + LT + "/td>" + LT + "td>Row 1-Cell 2" + LT + "/td>" + LT + "/tr>" + CRLF
-        htmlText = htmlText + LT + "tr>" + LT + "td>Row 2-Cell 1" + LT + "/td>" + LT + "td>Row 2-Cell 2" + LT + "/td>" + LT + "/tr>" + CRLF
-        htmlText = htmlText + LT + "/table>" + CRLF
-        htmlText = htmlText + LT + "hr>" + CRLF
-        htmlText = htmlText + LT + "/body>" + CRLF
+        htmlText = LT + "html>" + CR + LF
+        htmlText = htmlText + LT + "body>" + CR + LF
+        htmlText = htmlText + LT + "p>" + CR + LF
+        htmlText = htmlText + LT + "strong>bold" + LT + "/strong>" + LT + "br>" + CR + LF
+        htmlText = htmlText + LT + "em>italics" + LT + "/em>" + LT + "br>" + CR + LF
+        htmlText = htmlText + LT + "/p>" + CR + LF
+        htmlText = htmlText + LT + "h1>Heading 1" + LT + "/h1>" + CR + LF
+        htmlText = htmlText + LT + "h2>Heading 2" + LT + "/h2>" + CR + LF
+        htmlText = htmlText + LT + "h3>Heading 3" + LT + "/h3>" + CR + LF
+        htmlText = htmlText + LT + "ul>" + CR + LF
+        htmlText = htmlText + LT + "li>Bullet List" + LT + "/li>" + LT + "br>" + CR + LF
+        htmlText = htmlText + LT + "ul>" + CR + LF
+        htmlText = htmlText + LT + "li>Bullet List 2" + LT + "/li>" + CR + LF
+        htmlText = htmlText + LT + "/ul>" + CR + LF
+        htmlText = htmlText + LT + "/ul>" + CR + LF
+        htmlText = htmlText + LT + "ol>" + CR + LF
+        htmlText = htmlText + LT + "li>Number List" + LT + "/li>" + LT + "br>" + CR + LF
+        htmlText = htmlText + LT + "ol>" + CR + LF
+        htmlText = htmlText + LT + "li>Number List 2" + LT + "/li>" + CR + LF
+        htmlText = htmlText + LT + "/ol>" + CR + LF
+        htmlText = htmlText + LT + "/ol>" + CR + LF
+        htmlText = htmlText + LT + "p>" + LT + "img src='http://www.nonkit.com/smallbasic.files/Turtle.png'>" + LT + "/p>" + CR + LF
+        htmlText = htmlText + LT + "table border=1>" + CR + LF
+        htmlText = htmlText + LT + "tr>" + LT + "th>Table Heading 1" + LT + "/th>" + LT + "th>Table Heading 2" + LT + "/th>" + LT + "/tr>" + CR + LF
+        htmlText = htmlText + LT + "tr>" + LT + "td>Row 1-Cell 1" + LT + "/td>" + LT + "td>Row 1-Cell 2" + LT + "/td>" + LT + "/tr>" + CR + LF
+        htmlText = htmlText + LT + "tr>" + LT + "td>Row 2-Cell 1" + LT + "/td>" + LT + "td>Row 2-Cell 2" + LT + "/td>" + LT + "/tr>" + CR + LF
+        htmlText = htmlText + LT + "/table>" + CR + LF
+        htmlText = htmlText + LT + "hr>" + CR + LF
+        htmlText = htmlText + LT + "/body>" + CR + LF
         htmlText = htmlText + LT + "/html>"
+    End Sub
+    Sub Group_Add()
+        ' Group | add shapes to a group
+        ' param name - group name
+        ' param shX, shY, origin of shape array
+        ' param shape[] - shape array
+        ' param nGroup - number of group
+        ' return nGroup - updated number of group
+        ' return group - group array
+        Stack.PushValue("local", i)
+        Stack.PushValue("local", x)
+        Stack.PushValue("local", y)
+        nGroup = nGroup + 1
+        grp = ""
+        grp("name") = name
+        grp("x") = shX
+        grp("y") = shY
+        grp("angle") = 0
+        grp("dir") = 1
+        Shapes_CalcWidthAndHeight()
+        grp("width") = shWidth
+        grp("cx") = shWidth / 2
+        grp("height") = shHeight
+        s = 1
+        grp("scale") = s
+        For i = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+            shp = shape(i)
+            GraphicsWindow.PenWidth = shp("pw") * s
+            If shp("pw") > 0 Then
+                GraphicsWindow.PenColor = shp("pc")
+            End If
+            If Text.IsSubText("rect|ell|tri|text", shp("func")) Then
+                GraphicsWindow.BrushColor = shp("bc")
+            End If
+            If shp("func") = CType("rect", Primitive) Then
+                shp("obj") = Shapes.AddRectangle(shp("width") * s, shp("height") * s)
+            ElseIf shp("func") = CType("ell", Primitive) Then
+                shp("obj") = Shapes.AddEllipse(shp("width") * s, shp("height") * s)
+            ElseIf shp("func") = CType("tri", Primitive) Then
+                shp("obj") = Shapes.AddTriangle(shp("x1") * s, shp("y1") * s, shp("x2") * s, shp("y2") * s, shp("x3") * s, shp("y3") * s)
+            ElseIf shp("func") = CType("line", Primitive) Then
+                shp("obj") = Shapes.AddLine(shp("x1") * s, shp("y1") * s, shp("x2") * s, shp("y2") * s)
+            ElseIf shp("func") = CType("text", Primitive) Then
+                If silverlight Then
+                    fs = Microsoft.SmallBasic.Library.Math.Floor(shp("fs") * 0.9)
+                Else
+                    fs = shp("fs")
+                End If
+                GraphicsWindow.FontSize = fs * s
+                GraphicsWindow.FontName = shp("fn")
+                shp("obj") = Shapes.AddText(shp("text"))
+            End If
+            x = shp("x")
+            y = shp("y")
+            shp("rx") = x
+            shp("ry") = y
+            If silverlight And Text.IsSubText("tri|line", shp("func")) Then
+                alpha = Microsoft.SmallBasic.Library.Math.GetRadians(shp("angle"))
+                SB_RotateWorkaround()
+                shp("wx") = x
+                shp("wy") = y
+            End If
+            Shapes.Move(shp("obj"), shX + (x * s), shY + (y * s))
+            If Text.IsSubText("rect|ell|tri|text", shp("func")) And (shp("angle") <> 0) And (shp("angle") <> CType("", Primitive)) Then
+                Shapes.Rotate(shp("obj"), shp("angle"))
+            End If
+            shape(i) = shp
+        Next
+        grp("shape") = shape
+        group(nGroup) = grp
+        y = Stack.PopValue("local")
+        x = Stack.PopValue("local")
+        i = Stack.PopValue("local")
+    End Sub
+    Sub Group_Dump()
+        ' Gourp | Dump a group for debug
+        ' param group[i] - group to dump
+        grp = group(i)
+        TextWindow.WriteLine("name=" + grp("name"))
+        TextWindow.WriteLine("x=" + grp("x"))
+        TextWindow.WriteLine("y=" + grp("y"))
+        TextWindow.WriteLine("cx=" + grp("cx"))
+        TextWindow.WriteLine("width=" + grp("width"))
+        TextWindow.WriteLine("dir=" + grp("dir"))
+        shape = grp("shape")
+        For j = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+            TextWindow.WriteLine("shape[" + j + "]=" + WQ + shape(j) + WQ)
+        Next
+    End Sub
+    Sub Group_Flip()
+        ' Group | Flip a group
+        ' param group[i] - group to flip
+        ' return group[i] - flipped group
+        grp = group(i)
+        gx = grp("x")
+        gy = grp("y")
+        shape = grp("shape")
+        n = Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+        For angle = 20 To 180 Step 20
+            _a = Microsoft.SmallBasic.Library.Math.GetRadians(angle)
+            scaleX = Microsoft.SmallBasic.Library.Math.Cos(_a)
+            For j = 1 To n
+                shp = shape(j)
+                Shapes.Zoom(shp("obj"), Microsoft.SmallBasic.Library.Math.Abs(scaleX), 1)
+                cx = shp("x") + (shp("width") / 2)
+                cx = ((cx - grp("cx")) * scaleX) + grp("cx")
+                Shapes.Move(shp("obj"), cx - (shp("width") / 2) + gx, shp("y") + gy)
+                If (angle = 100) And (shp("angle") <> 0) Then
+                    shp("angle") = -shp("angle")
+                    Shapes.Rotate(shp("obj"), shp("angle"))
+                    shape(j) = shp
+                End If
+                If angle = 180 Then
+                    _x = Microsoft.SmallBasic.Library.Math.Floor((cx - (shp("width") / 2)) * 100) / 100
+                    shp("rx") = _x
+                    shp("x") = _x
+                    shape(j) = shp
+                End If
+            Next
+            Program.Delay(20)
+        Next
+        grp("dir") = grp("dir") * -1
+        grp("shape") = shape
+        group(i) = grp
+    End Sub
+    Sub Group_Hide()
+        ' Group | Hide a group
+        ' param group[i] - the group to hide
+        ' return group[i] - the updated group
+        grp = group(i)
+        shape = grp("shape")
+        Stack.PushValue("local", i)
+        For i = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+            shp = shape(i)
+            Shapes.HideShape(shp("obj"))
+        Next
+        i = Stack.PopValue("local")
+    End Sub
+    Sub Group_Move()
+        ' Group | Move a group
+        ' param group[i] - the group to move
+        ' param x, y - the position to move
+        ' return group[i] - the updated group
+        grp = group(i)
+        s = grp("scale")
+        grp("x") = x
+        grp("y") = y
+        shape = grp("shape")
+        n = Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+        For j = 1 To n
+            shp = shape(j)
+            If silverlight And Text.IsSubText("tri|line", shp("func")) Then
+                _x = shp("wx")
+                _y = shp("wy")
+            Else
+                _x = shp("rx")
+                _y = shp("ry")
+            End If
+            Shapes.Move(shp("obj"), grp("x") + (_x * s), grp("y") + (_y * s))
+        Next
+        group(i) = grp
+    End Sub
+    Sub Group_Remove()
+        ' Group | Remove a group
+        ' param group[i] - the group to hide
+        ' return shape [] - the removed shapes
+        grp = group(i)
+        shape = grp("shape")
+        Stack.PushValue("local", i)
+        For i = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+            shp = shape(i)
+            Shapes.Remove(shp("obj"))
+        Next
+        shX = grp("x")
+        shY = grp("y")
+        i = Stack.PopValue("local")
+    End Sub
+    Sub Group_Show()
+        ' Group | Show a group
+        ' param group[i] - the group to show
+        ' return group[i] - the updated group
+        grp = group(i)
+        shape = grp("shape")
+        Stack.PushValue("local", i)
+        For i = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
+            shp = shape(i)
+            Shapes.ShowShape(shp("obj"))
+        Next
+        i = Stack.PopValue("local")
     End Sub
     Sub Shapes_Init()
         ' Shapes | Initialize shapes data
@@ -204,70 +378,52 @@ Module SmallWikiPadModule
         ' return shape - array of shapes
         shX = 10 ' x offset
         shY = 10 ' y offset
-        grp = ""
-        grp("x") = shX
-        grp("y") = shY
-        n = nShape
-        grp("iMin") = n + 1
-        shape(n + 1) = "func=text;x=0;y=0;fn=Segoe UI;fs=12;fb=True;text=bold;bc=#000000;"
-        shape(n + 2) = "func=text;x=0;y=16;fn=Segoe UI;fs=12;fi=True;text=italics;bc=#000000;"
-        shape(n + 3) = "func=text;x=0;y=32;fn=Segoe UI;fs=12;text=underline;bc=#000000;"
-        shape(n + 4) = "func=rect;x=0;y=46;width=50;height=1;pc=#000000;pw=1;"
-        shape(n + 5) = "func=text;x=0;y=58;fn=Segoe UI;fs=36;fb=True;text=Heading 1;bc=#000000;"
-        shape(n + 6) = "func=text;x=0;y=98;fn=Segoe UI;fs=26;fb=True;text=Heading 2;bc=#000000;"
-        shape(n + 7) = "func=text;x=0;y=128;fn=Segoe UI;fs=16;fb=True;text=Heading 3;bc=#000000;"
-        shape(n + 8) = "func=ell;x=20;y=154;x2=50;y2=54;width=5;height=5;bc=#000000;pw=0;"
-        shape(n + 9) = "func=text;x=30;y=148;fn=Segoe UI;fs=12;text=Bullet List;bc=#000000;"
-        shape(n + 10) = "func=ell;x=40;y=170;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
-        shape(n + 11) = "func=text;x=50;y=164;fn=Segoe UI;fs=12;text=Bullet List 2;bc=#000000;"
-        shape(n + 12) = "func=text;x=18;y=180;fn=Segoe UI;fs=12;text=1. Number List;bc=#000000;"
-        shape(n + 13) = "func=text;x=38;y=196;fn=Segoe UI;fs=12;text=1. Number List 2;bc=#000000;"
-        shape(n + 14) = "func=img;x=0;y=212;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
-        shape(n + 15) = "func=rect;x=0;y=464;width=200;height=54;bc=#FFFFFF;pc=#666666;pw=1;"
-        shape(n + 16) = "func=rect;x=0;y=482;width=200;height=1;pc=#666666;pw=1;"
-        shape(n + 17) = "func=rect;x=0;y=500;width=200;height=1;pc=#666666;pw=1;"
-        shape(n + 18) = "func=rect;x=100;y=464;width=1;height=54;pc=#666666;pw=1;"
-        shape(n + 19) = "func=text;x=2;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 1;bc=#000000;"
-        shape(n + 20) = "func=text;x=102;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 2;bc=#000000;"
-        shape(n + 21) = "func=text;x=2;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 1;bc=#000000;"
-        shape(n + 22) = "func=text;x=102;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 2;bc=#000000;"
-        shape(n + 23) = "func=text;x=2;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 1;bc=#000000;"
-        shape(n + 24) = "func=text;x=102;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 2;bc=#000000;"
-        shape(n + 25) = "func=rect;x=0;y=522;width=578;height=1;pc=#666666;pw=1;"
-        nShape = nShape + 25
-        grp("iMax") = nShape
-        nGroup = nGroup + 1 ' number of group
-        group(nGroup) = grp
+        shape = ""
+        shape(1) = "func=text;x=0;y=0;fn=Segoe UI;fs=12;fb=True;text=bold;bc=#000000;"
+        shape(2) = "func=text;x=0;y=16;fn=Segoe UI;fs=12;fi=True;text=italics;bc=#000000;"
+        shape(3) = "func=text;x=0;y=32;fn=Segoe UI;fs=12;text=underline;bc=#000000;"
+        shape(4) = "func=rect;x=0;y=46;width=50;height=1;pc=#000000;pw=1;"
+        shape(5) = "func=text;x=0;y=58;fn=Segoe UI;fs=36;fb=True;text=Heading 1;bc=#000000;"
+        shape(6) = "func=text;x=0;y=98;fn=Segoe UI;fs=26;fb=True;text=Heading 2;bc=#000000;"
+        shape(7) = "func=text;x=0;y=128;fn=Segoe UI;fs=16;fb=True;text=Heading 3;bc=#000000;"
+        shape(8) = "func=ell;x=20;y=154;x2=50;y2=54;width=5;height=5;bc=#000000;pw=0;"
+        shape(9) = "func=text;x=30;y=148;fn=Segoe UI;fs=12;text=Bullet List;bc=#000000;"
+        shape(10) = "func=ell;x=40;y=170;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
+        shape(11) = "func=text;x=50;y=164;fn=Segoe UI;fs=12;text=Bullet List 2;bc=#000000;"
+        shape(12) = "func=text;x=18;y=180;fn=Segoe UI;fs=12;text=1. Number List;bc=#000000;"
+        shape(13) = "func=text;x=38;y=196;fn=Segoe UI;fs=12;text=1. Number List 2;bc=#000000;"
+        shape(14) = "func=img;x=0;y=212;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
+        shape(15) = "func=rect;x=0;y=464;width=200;height=54;bc=#FFFFFF;pc=#666666;pw=1;"
+        shape(16) = "func=rect;x=0;y=482;width=200;height=1;pc=#666666;pw=1;"
+        shape(17) = "func=rect;x=0;y=500;width=200;height=1;pc=#666666;pw=1;"
+        shape(18) = "func=rect;x=100;y=464;width=1;height=54;pc=#666666;pw=1;"
+        shape(19) = "func=text;x=2;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 1;bc=#000000;"
+        shape(20) = "func=text;x=102;y=464;fn=Segoe UI;fs=12;fb=True;text=Table Heading 2;bc=#000000;"
+        shape(21) = "func=text;x=2;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 1;bc=#000000;"
+        shape(22) = "func=text;x=102;y=482;fn=Segoe UI;fs=12;text=Row 1-Cell 2;bc=#000000;"
+        shape(23) = "func=text;x=2;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 1;bc=#000000;"
+        shape(24) = "func=text;x=102;y=500;fn=Segoe UI;fs=12;text=Row 2-Cell 2;bc=#000000;"
+        shape(25) = "func=rect;x=0;y=522;width=578;height=1;pc=#666666;pw=1;"
     End Sub
     Sub Controls_AddTabs()
         shX = 0 ' x offset
         shY = 0 ' y offset
-        grp = ""
-        grp("x") = shX
-        grp("y") = shY
-        n = nShape
-        grp("iMin") = n + 1
-        shape(n + 1) = "func=rect;x=0;y=0;width=" + gw + ";height=32;pw=0;bc=#FFFFFF;"
-        shape(n + 2) = "func=line;x=" + posX(1) + ";y=5;x1=0;y1=0;x2=" + (posX(4) - posX(1)) + ";y2=0;pw=1;pc=#666666;"
+        shape = ""
+        shape(1) = "func=rect;x=0;y=0;width=" + gw + ";height=32;pw=0;bc=#FFFFFF;"
+        shape(2) = "func=line;x=" + posX(1) + ";y=5;x1=0;y1=0;x2=" + (posX(4) - posX(1)) + ";y2=0;pw=1;pc=#666666;"
         For i = 1 To 3
-            shape(n + (i * 3)) = "func=text;x=" + (posX(i) + 5) + ";y=10;text=" + item(i) + ";fn=Segoe UI;fs=12;"
-            shape(n + (i * 3) + 1) = "func=line;x=" + posX(i) + ";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
-            shape(n + (i * 3) + 2) = "func=line;x=" + posX(i) + ";y=30;x1=0;y1=0;x2=" + (posX(i + 1) - posX(i)) + ";y2=0;pw=1;pc=#666666;"
+            shape(i * 3) = "func=text;x=" + (posX(i) + 5) + ";y=10;text=" + item(i) + ";fn=Segoe UI;fs=12;"
+            shape((i * 3) + 1) = "func=line;x=" + posX(i) + ";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
+            shape((i * 3) + 2) = "func=line;x=" + posX(i) + ";y=30;x1=0;y1=0;x2=" + (posX(i + 1) - posX(i)) + ";y2=0;pw=1;pc=#666666;"
         Next
         iLast = 1
-        shape(n + 12) = "func=line;x=" + posX(4) + ";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
-        shape(n + 13) = "func=line;x=" + posX(4) + ";y=30;x1=0;y1=0;x2=" + (gw - 5 - posX(4)) + ";y2=0;pw=1;pc=#666666;"
-        nShape = nShape + 13
-        grp("iMax") = nShape
-        nGroup = nGroup + 1 ' number of group
-        group(nGroup) = grp
-        iMin = grp("iMin")
-        iMax = grp("iMax")
-        Shapes_Add()
+        shape(12) = "func=line;x=" + posX(4) + ";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
+        shape(13) = "func=line;x=" + posX(4) + ";y=30;x1=0;y1=0;x2=" + (gw - 5 - posX(4)) + ";y2=0;pw=1;pc=#666666;"
+        Group_Add()
         For i = 1 To 3
-            shp = shape(n + (i * 3))
+            shp = shape(i * 3)
             menu(i) = shp("obj")
-            shp = shape(n + (i * 3) + 2)
+            shp = shape((i * 3) + 2)
             hline(i) = shp("obj")
         Next
         Shapes.HideShape(hline(iLast))
@@ -282,59 +438,35 @@ Module SmallWikiPadModule
         ' add vertical scroll bar
         shX = x
         shY = y
-        grp = ""
-        grp("x") = shX
-        grp("y") = shY
-        n = nShape
-        grp("iMin") = n + 1
-        shape(n + 1) = "func=rect;x=0;y=0;width=12;height=" + height + ";pw=0;bc=#99CCCCCC;"
-        shape(n + 2) = "func=rect;x=0;y=0;width=12;height=12;pw=0;bc=#CCCCCC;"
-        shape(n + 3) = "func=line;x=3;y=4;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
-        shape(n + 4) = "func=line;x=6;y=4;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
-        shape(n + 5) = "func=rect;x=0;y=" + (height - 12) + ";width=12;height=12;pw=0;bc=#CCCCCC;"
-        shape(n + 6) = "func=line;x=3;y=" + (height - 8) + ";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
-        shape(n + 7) = "func=line;x=6;y=" + (height - 8) + ";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
-        nShape = nShape + 7
-        grp("iMax") = nShape
-        nGroup = nGroup + 1 ' number of group
-        group(nGroup) = grp
+        shape = ""
+        shape(1) = "func=rect;x=0;y=0;width=12;height=" + height + ";pw=0;bc=#99CCCCCC;"
+        shape(2) = "func=rect;x=0;y=0;width=12;height=12;pw=0;bc=#CCCCCC;"
+        shape(3) = "func=line;x=3;y=4;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+        shape(4) = "func=line;x=6;y=4;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+        shape(5) = "func=rect;x=0;y=" + (height - 12) + ";width=12;height=12;pw=0;bc=#CCCCCC;"
+        shape(6) = "func=line;x=3;y=" + (height - 8) + ";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+        shape(7) = "func=line;x=6;y=" + (height - 8) + ";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+        Group_Add()
         iScrollBar = nGroup
-        iMin = grp("iMin")
-        iMax = grp("iMax")
-        scale = 1
-        Shapes_Add()
         ' add thumb
         th = (height - 24) * height / ph ' thumb heignt
         shX = x
         shY = y + 12
-        grp = ""
-        grp("x") = shX
-        grp("y") = shY
-        n = nShape
-        grp("iMin") = n + 1
-        shape(n + 1) = "func=rect;x=0;y=0;width=12;height=" + th + ";pw=0;bc=#999999;"
-        nShape = nShape + 1
-        grp("iMax") = nShape
-        nGroup = nGroup + 1 ' number of group
-        group(nGroup) = grp
+        shape = ""
+        shape(1) = "func=rect;x=0;y=0;width=12;height=" + th + ";pw=0;bc=#999999;"
+        Group_Add()
         iThumb = nGroup
-        iMin = grp("iMin")
-        iMax = grp("iMax")
-        Shapes_Add()
         yminThumb = y + 12
         ymaxThumb = y + height - 12 - th
         hPage = (ph - ymaxPic) / ph * (ymaxThumb - yminThumb) ' page height in scroll bar
     End Sub
     Sub Controls_Scroll()
         ' param yMove - relative thumb move
-        grp = group(iDocument)
+        i = iDocument
+        grp = group(i)
         x = grp("x")
         y = grp("y") - (yMove * gh / (ymaxThumb - yminThumb))
-        iMin = grp("iMin")
-        iMax = grp("iMax")
-        Shapes_Move()
-        grp("y") = y
-        group(iDocument) = grp
+        Group_Move()
     End Sub
     Sub Controls_ScrollBar()
         grp = group(iScrollBar)
@@ -393,9 +525,8 @@ Module SmallWikiPadModule
                         If y <> yLast Then
                             yMove = y - yLast
                             yLast = y
-                            Shapes_Move() ' move thumb
-                            grp("y") = shY
-                            group(iThumb) = grp ' thumb
+                            i = iThumb
+                            Group_Move() ' move thumb
                             Controls_Scroll()
                         End If
                         myLast = my
@@ -419,9 +550,8 @@ Module SmallWikiPadModule
             End If
             If y <> yLast Then
                 yMove = y - yLast
-                Shapes_Move() ' move thumb
-                grp("y") = shY
-                group(iThumb) = grp ' thumb
+                i = iThumb
+                Group_Move() ' move thumb
                 Controls_Scroll()
             End If
         End If
@@ -447,6 +577,8 @@ Module SmallWikiPadModule
             a = 90 ' [degree]
         ElseIf (x = 0) And (y < 0) Then
             a = -90
+        ElseIf (x = 0) And (y = 0) Then
+            a = 0
         Else
             a = Microsoft.SmallBasic.Library.Math.ArcTan(y / x) * 180 / Microsoft.SmallBasic.Library.Math.Pi
         End If
@@ -485,67 +617,6 @@ Module SmallWikiPadModule
             silverlight = false
         End If
     End Sub
-    Sub Shapes_Add()
-        ' Shapes | add shapes as shapes data
-        ' param iMin, iMax - shape indices to add
-        ' param shape - array of shapes
-        ' param scale - 1 if same scale
-        ' return shWidth, shHeight - total size of shapes
-        ' return shAngle - current angle of shapes
-        Stack.PushValue("local", i)
-        Stack.PushValue("local", x)
-        Stack.PushValue("local", y)
-        Shapes_CalcWidthAndHeight()
-        s = scale
-        For i = iMin To iMax
-            shp = shape(i)
-            GraphicsWindow.PenWidth = shp("pw") * s
-            If shp("pw") > 0 Then
-                GraphicsWindow.PenColor = shp("pc")
-            End If
-            If Text.IsSubText("rect|ell|tri|text", shp("func")) Then
-                GraphicsWindow.BrushColor = shp("bc")
-            End If
-            If shp("func") = CType("rect", Primitive) Then
-                shp("obj") = Shapes.AddRectangle(shp("width") * s, shp("height") * s)
-            ElseIf shp("func") = CType("ell", Primitive) Then
-                shp("obj") = Shapes.AddEllipse(shp("width") * s, shp("height") * s)
-            ElseIf shp("func") = CType("tri", Primitive) Then
-                shp("obj") = Shapes.AddTriangle(shp("x1") * s, shp("y1") * s, shp("x2") * s, shp("y2") * s, shp("x3") * s, shp("y3") * s)
-            ElseIf shp("func") = CType("line", Primitive) Then
-                shp("obj") = Shapes.AddLine(shp("x1") * s, shp("y1") * s, shp("x2") * s, shp("y2") * s)
-            ElseIf shp("func") = CType("text", Primitive) Then
-                fs = shp("fs")
-                GraphicsWindow.FontSize = fs * s
-                GraphicsWindow.FontName = shp("fn")
-                GraphicsWindow.FontBold = shp("fb")
-                GraphicsWindow.FontItalic = shp("fi")
-                shp("obj") = Shapes.AddText(shp("text"))
-            ElseIf shp("func") = CType("img", Primitive) Then
-                shp("obj") = Shapes.AddImage(shp("src"))
-                Shapes.Move(shp("obj"), shp("x"), shp("y"))
-            End If
-            x = shp("x")
-            y = shp("y")
-            shp("rx") = x
-            shp("ry") = y
-            If silverlight And Text.IsSubText("tri|line", shp("func")) Then
-                alpha = Microsoft.SmallBasic.Library.Math.GetRadians(shp("angle"))
-                SB_RotateWorkaround()
-                shp("wx") = x
-                shp("wy") = y
-            End If
-            Shapes.Move(shp("obj"), shX + (x * s), shY + (y * s))
-            If Text.IsSubText("rect|ell|tri|text", shp("func")) And (shp("angle") <> 0) And (shp("angle") <> CType("", Primitive)) Then
-                Shapes.Rotate(shp("obj"), shp("angle"))
-            End If
-            shape(i) = shp
-        Next
-        shAngle = 0
-        y = Stack.PopValue("local")
-        x = Stack.PopValue("local")
-        i = Stack.PopValue("local")
-    End Sub
     Sub Shapes_CalcRotatePos()
         ' Shapes | Calculate position for rotated shape
         ' param["x"], param["y"] - position of a shape
@@ -570,7 +641,7 @@ Module SmallWikiPadModule
         ' Shapes | Calculate total width and height of shapes
         ' param iMin, iMax - shape indices to add
         ' return shWidth, shHeight - total size of shapes
-        For i = iMin To iMax
+        For i = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
             shp = shape(i)
             If (shp("func") = CType("tri", Primitive)) Or (shp("func") = CType("line", Primitive)) Then
                 xmin = shp("x1")
@@ -619,46 +690,6 @@ Module SmallWikiPadModule
             End If
             shape(i) = shp
         Next
-    End Sub
-    Sub Shapes_Dump()
-        For i = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
-            TextWindow.WriteLine(shape(i))
-        Next
-    End Sub
-    Sub Shapes_Move()
-        ' Shapes | Move shapes
-        ' param iMin, iMax - shape indices to add
-        ' param shape - array of shapes
-        ' param scale - to zoom
-        ' param x, y - position to move
-        ' return shX, shY - new position of shapes
-        Stack.PushValue("local", i)
-        s = scale
-        shX = x
-        shY = y
-        For i = iMin To iMax
-            shp = shape(i)
-            If silverlight And Text.IsSubText("tri|line", shp("func")) Then
-                _x = shp("wx")
-                _y = shp("wy")
-            Else
-                _x = shp("rx")
-                _y = shp("ry")
-            End If
-            Shapes.Move(shp("obj"), shX + (_x * s), shY + (_y * s))
-        Next
-        i = Stack.PopValue("local")
-    End Sub
-    Sub Shapes_Remove()
-        ' Shapes | Remove shapes
-        ' param iMin, iMax - shapes indices to remove
-        ' param shape - array of shapes
-        Stack.PushValue("local", i)
-        For i = iMin To iMax
-            shp = shape(i)
-            Shapes.Remove(shp("obj"))
-        Next
-        i = Stack.PopValue("local")
     End Sub
     Sub Shapes_Rotate()
         ' Shapes | Rotate shapes

@@ -22,6 +22,9 @@ $RECYCLE.BIN/
 *.dll
 *.pdb
 
+# Debug files
+Graduate/
+
 # =========================
 # Operating System Files
 # =========================
