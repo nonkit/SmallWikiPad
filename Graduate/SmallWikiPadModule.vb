@@ -2,12 +2,12 @@ Module SmallWikiPadModule
     Dim CR, LF, LT, WQ, tbox, wikiText, dx, mx, mouseDown, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, posX, item, dy, my, mouseMove, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, iMax, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, shWidth, s, silverlight, fs, alpha, j, gx, gy, _a, scaleX, cx, _x, _y, r, a, ox, oy, color, msWait, xmin, xmax, ymin, ymax As Primitive
     Sub Main()
         ' Small Wiki Pad
-        ' Version 0.41a
+        ' Version 0.42a
         ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
         ' Last update 2017-08-02
         ' Program ID NVD371-5
 
-        GraphicsWindow.Title = "Small Wiki Pad 0.41a"
+        GraphicsWindow.Title = "Small Wiki Pad 0.42a"
         CR = Text.GetCharacter(13)
         LF = Text.GetCharacter(10)
         LT = "<"
@@ -71,7 +71,7 @@ Module SmallWikiPadModule
                     name = "document"
                     Group_Add()
                     iDocument = nGroup
-                    ph = shHeight ' picture height
+                    ph = shHeight + 6 ' picture height
                     ymaxPic = 32 + shY
                     yminPic = gh - ph
                     x = shX
@@ -225,8 +225,8 @@ Module SmallWikiPadModule
         shape = ""
         shape(1) = "func=rect;x=0;y=0;width=14;height=" + height + ";pw=0;bc=#99CCCCCC;"
         shape(2) = "func=rect;x=0;y=0;width=14;height=14;pw=0;bc=#CCCCCC;"
-        shape(3) = "func=line;x=3;y=4;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
-        shape(4) = "func=line;x=6;y=4;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+        shape(3) = "func=line;x=3;y=6;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+        shape(4) = "func=line;x=6;y=6;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
         shape(5) = "func=rect;x=0;y=" + (height - 14) + ";width=14;height=14;pw=0;bc=#CCCCCC;"
         shape(6) = "func=line;x=3;y=" + (height - 8) + ";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
         shape(7) = "func=line;x=6;y=" + (height - 8) + ";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
@@ -253,6 +253,11 @@ Module SmallWikiPadModule
         grp = group(i)
         x = grp("x")
         y = grp("y") - (yMove * hPage / (ymaxThumb - yminThumb))
+        If y < yminPic Then
+            y = yminPic
+        ElseIf ymaxPic < y Then
+            y = ymaxPic
+        End If
         Group_Move()
     End Sub
     Sub Controls_ScrollBar()
@@ -286,14 +291,14 @@ Module SmallWikiPadModule
             If (y1 <= dy) And (dy <= y2) Then
                 ' line up
                 x = shX
-                y = y5 - hPage
+                y = y5 - (th / 25)
                 If y < yminThumb Then
                     y = yminThumb
                 End If
             ElseIf (y3 <= dy) And (dy <= y4) Then
                 ' line down
                 x = shX
-                y = y5 + hPage
+                y = y5 + (th / 25)
                 If ymaxThumb < y Then
                     y = ymaxThumb
                 End If
