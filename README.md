@@ -1,7 +1,7 @@
 ![icon](img/WikiPadIcon.png)
 # Small Wiki Pad
 
-Version 0.41a
+Version 0.42a
 
 RELEASE NOTES
 
@@ -11,6 +11,4 @@ RELEASE NOTES
 Known Issues
 
 - #3 Can't edit wiki.
-- #13 Preview scrolls too much.
 - #14 Preview picture and thumb sometimes disappear.
-- #15 Same amount scroll with page and line.

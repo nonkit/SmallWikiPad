@@ -1,10 +1,10 @@
 ' Small Wiki Pad
-' Version 0.41a
+' Version 0.42a
 ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
-' Last update 2017-08-02
+' Last update 2017-08-05
 ' Program ID NVD371-5
 
-GraphicsWindow.Title = "Small Wiki Pad 0.41a"
+GraphicsWindow.Title = "Small Wiki Pad 0.42a"
 CR = Text.GetCharacter(13)
 LF = Text.GetCharacter(10)
 LT = "<"
@@ -68,7 +68,7 @@ Sub ChangeTab
         name = "document"
         Group_Add()
         iDocument = nGroup
-        ph = shHeight             ' picture height
+        ph = shHeight + shY + 6   ' picture height
         ymaxPic = 32 + shY
         yminPic = gh - ph
         x = shX
@@ -229,8 +229,8 @@ Sub Controls_AddVScroll
   shape = ""
   shape[1] = "func=rect;x=0;y=0;width=14;height="+height+";pw=0;bc=#99CCCCCC;"
   shape[2] = "func=rect;x=0;y=0;width=14;height=14;pw=0;bc=#CCCCCC;"
-  shape[3] = "func=line;x=3;y=4;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
-  shape[4] = "func=line;x=6;y=4;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
+  shape[3] = "func=line;x=3;y=6;x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
+  shape[4] = "func=line;x=6;y=6;x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
   shape[5] = "func=rect;x=0;y="+(height-14)+";width=14;height=14;pw=0;bc=#CCCCCC;"
   shape[6] = "func=line;x=3;y="+(height-8)+";x1=0;y1=0;x2=3;y2=3;pw=1;pc=#666666;"
   shape[7] = "func=line;x=6;y="+(height-8)+";x1=0;y1=3;x2=3;y2=0;pw=1;pc=#666666;"
@@ -257,7 +257,12 @@ Sub Controls_Scroll
   i = iDocument
   grp = group[i]
   x = grp["x"]
-  y = grp["y"] - yMove * hPage / (ymaxThumb - yminThumb)
+  y = grp["y"] - yMove / bh * ph
+  If y < yminPic Then
+    y = yminPic
+  ElseIf ymaxPic < y Then
+    y = ymaxPic
+  EndIf
   Group_Move()
 EndSub
 
@@ -292,14 +297,14 @@ Sub Controls_ScrollBar
     If y1 <= dy And dy <= y2 Then
       ' line up
       x = shX
-      y = y5 - hPage
+      y = y5 - th / 25
       If y < yminThumb Then
         y = yminThumb
       EndIf
     ElseIf y3 <= dy And dy <= y4 Then
       ' line down
       x = shX
-      y = y5 + hPage
+      y = y5 + th / 25
       If ymaxThumb < y Then
         y = ymaxThumb
       EndIf
@@ -330,14 +335,14 @@ Sub Controls_ScrollBar
     ElseIf dy < y5 Then
       ' page up
       x = shX
-      y = y5 - hPage
+      y = y5 - th
       If y < yminThumb Then
         y = yminThumb
       EndIf
     ElseIf y6 < dy Then
       ' page down
       x = shX
-      y = y5 + hPage
+      y = y5 + th
       If ymaxThumb < y Then
         y = ymaxThumb
       EndIf
