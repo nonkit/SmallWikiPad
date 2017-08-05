@@ -1,13 +1,13 @@
 Module SmallWikiPadModule
-    Dim CR, LF, LT, WQ, tbox, wikiText, dx, mx, mouseDown, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, posX, item, dy, my, mouseMove, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, iMax, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, shWidth, s, silverlight, fs, alpha, j, gx, gy, _a, scaleX, cx, _x, _y, r, a, ox, oy, color, msWait, xmin, xmax, ymin, ymax As Primitive
+    Dim CR, LF, LT, WQ, tbox, wikiText, dx, mx, mouseDown, posX, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, item, dy, my, mouseMove, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, iMax, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, shWidth, s, silverlight, fs, alpha, j, gx, gy, _a, scaleX, cx, _x, _y, r, a, ox, oy, color, msWait, xmin, xmax, ymin, ymax As Primitive
     Sub Main()
         ' Small Wiki Pad
-        ' Version 0.42a
+        ' Version 0.43a
         ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
-        ' Last update 2017-08-02
+        ' Last update 2017-08-05
         ' Program ID NVD371-5
 
-        GraphicsWindow.Title = "Small Wiki Pad 0.42a"
+        GraphicsWindow.Title = "Small Wiki Pad 0.43a"
         CR = Text.GetCharacter(13)
         LF = Text.GetCharacter(10)
         LT = "<"
@@ -21,12 +21,14 @@ Module SmallWikiPadModule
         AddHandler GraphicsWindow.MouseMove, AddressOf OnMouseMove
         While True
             If mouseDown Then
+                AddHandler GraphicsWindow.MouseDown, AddressOf DoNothing
                 Controls_TabClick()
                 If tabClicked Then
                     ChangeTab()
                 Else
                     Controls_ScrollBar()
                 End If
+                AddHandler GraphicsWindow.MouseDown, AddressOf OnMouseDown
                 mouseDown = False
             End If
         End While
@@ -71,7 +73,7 @@ Module SmallWikiPadModule
                     name = "document"
                     Group_Add()
                     iDocument = nGroup
-                    ph = shHeight + 6 ' picture height
+                    ph = shHeight + shY + 6 ' picture height
                     ymaxPic = 32 + shY
                     yminPic = gh - ph
                     x = shX
@@ -108,6 +110,8 @@ Module SmallWikiPadModule
             End If
             iLast = i
         End If
+    End Sub
+    Sub DoNothing()
     End Sub
     Sub Form()
         gw = 598
@@ -252,7 +256,7 @@ Module SmallWikiPadModule
         i = iDocument
         grp = group(i)
         x = grp("x")
-        y = grp("y") - (yMove * hPage / (ymaxThumb - yminThumb))
+        y = grp("y") - (yMove / bh * ph)
         If y < yminPic Then
             y = yminPic
         ElseIf ymaxPic < y Then
@@ -329,14 +333,14 @@ Module SmallWikiPadModule
             ElseIf dy < y5 Then
                 ' page up
                 x = shX
-                y = y5 - hPage
+                y = y5 - th
                 If y < yminThumb Then
                     y = yminThumb
                 End If
             ElseIf y6 < dy Then
                 ' page down
                 x = shX
-                y = y5 + hPage
+                y = y5 + th
                 If ymaxThumb < y Then
                     y = ymaxThumb
                 End If

@@ -1,10 +1,10 @@
 ' Small Wiki Pad
-' Version 0.42a
+' Version 0.43a
 ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
 ' Last update 2017-08-05
 ' Program ID NVD371-5
 
-GraphicsWindow.Title = "Small Wiki Pad 0.42a"
+GraphicsWindow.Title = "Small Wiki Pad 0.43a"
 CR = Text.GetCharacter(13)
 LF = Text.GetCharacter(10)
 LT = "<"
@@ -18,12 +18,14 @@ GraphicsWindow.MouseDown = OnMouseDown
 GraphicsWindow.MouseMove = OnMouseMove
 While "True"
   If mouseDown Then
+    GraphicsWindow.MouseDown = DoNothing
     Controls_TabClick()
     If tabClicked Then
       ChangeTab()
     Else
       Controls_ScrollBar()
     EndIf
+    GraphicsWindow.MouseDown = OnMouseDown
     mouseDown = "False"
   EndIf
 EndWhile
@@ -105,6 +107,9 @@ Sub ChangeTab
     EndIf
     iLast = i
   EndIf
+EndSub
+
+Sub DoNothing
 EndSub
 
 Sub Form
@@ -254,6 +259,7 @@ EndSub
 
 Sub Controls_Scroll
   ' param yMove - relative thumb move
+  Stack.PushValue("local", y)
   i = iDocument
   grp = group[i]
   x = grp["x"]
@@ -264,6 +270,7 @@ Sub Controls_Scroll
     y = ymaxPic
   EndIf
   Group_Move()
+  y = Stack.PopValue("local")
 EndSub
 
 Sub Controls_ScrollBar

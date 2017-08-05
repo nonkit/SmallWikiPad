@@ -1,7 +1,7 @@
 ![icon](img/WikiPadIcon.png)
 # Small Wiki Pad
 
-Version 0.42a
+Version 0.43a
 
 RELEASE NOTES
 
@@ -11,4 +11,3 @@ RELEASE NOTES
 Known Issues
 
 - #3 Can't edit wiki.
-- #14 Preview picture and thumb sometimes disappear.
