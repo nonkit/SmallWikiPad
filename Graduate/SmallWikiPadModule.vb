@@ -1,25 +1,22 @@
 Module SmallWikiPadModule
-    Dim CR, LF, LT, WQ, tbox, wikiText, dx, mx, mouseDown, posX, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, item, dy, my, mouseMove, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, iMax, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, shWidth, s, silverlight, fs, alpha, j, gx, gy, _a, scaleX, cx, _x, _y, r, a, ox, oy, color, msWait, xmin, xmax, ymin, ymax As Primitive
+    Dim tbox, wikiText, dx, mx, mouseDown, posX, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, item, CR, LF, LT, TAB, WQ, __Not, fsNormal, fn, fsH, fb, fi, bc, pc, pw, param, styled, x3, txt, paragraph, dy, my, mouseMove, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, iMax, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, yc, y0, fs, x0, px0, px, str, width, color, left, right, shWidth, s, silverlight, alpha, j, _x, _y, r, a, pSave, p, c2, buf, match, c, lastIndent, indent, _htmlText, c4, _indent, nH, c3, altText, caption, type, lastParagraph, ox, oy, msWait, xmin, xmax, ymin, ymax, func, obj As Primitive
     Sub Main()
         ' Small Wiki Pad
-        ' Version 0.43a
+        ' Version 0.5.0b
         ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
-        ' Last update 2017-08-05
-        ' Program ID NVD371-5
+        ' Last update 2017-08-12
+        ' Program ID NVD371-6
 
-        GraphicsWindow.Title = "Small Wiki Pad 0.43a"
-        CR = Text.GetCharacter(13)
-        LF = Text.GetCharacter(10)
-        LT = "<"
-        WQ = Text.GetCharacter(34)
-        SB_Workaround()
+        GraphicsWindow.Title = "Small Wiki Pad 0.5.0b"
+        Init()
         Form()
         LoadWikiText()
-        LoadHTMLText()
         Controls.SetTextBoxText(tbox, wikiText)
+        Parse_WikiText()
+        'LoadHTMLText()
         AddHandler GraphicsWindow.MouseDown, AddressOf OnMouseDown
         AddHandler GraphicsWindow.MouseMove, AddressOf OnMouseMove
-        While True
+        While true
             If mouseDown Then
                 AddHandler GraphicsWindow.MouseDown, AddressOf DoNothing
                 Controls_TabClick()
@@ -29,9 +26,73 @@ Module SmallWikiPadModule
                     Controls_ScrollBar()
                 End If
                 AddHandler GraphicsWindow.MouseDown, AddressOf OnMouseDown
-                mouseDown = False
+                mouseDown = false
             End If
         End While
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     End Sub
     Sub ChangeTab()
         i = lastTabClicked
@@ -119,7 +180,7 @@ Module SmallWikiPadModule
         GraphicsWindow.Width = gw
         GraphicsWindow.Height = gh
         GraphicsWindow.BrushColor = "#333333"
-        GraphicsWindow.FontName = "Segoe UI"
+        GraphicsWindow.FontName = "Verdana"
         GraphicsWindow.FontBold = false
         GraphicsWindow.PenWidth = 1
         GraphicsWindow.PenColor = "#666666"
@@ -131,21 +192,50 @@ Module SmallWikiPadModule
         tbox = Controls.AddMultiLineTextBox(posX(1), 35)
         Controls.SetSize(tbox, gw - 10, gh - 40)
     End Sub
+    Sub Init()
+        CR = Text.GetCharacter(13)
+        LF = Text.GetCharacter(10)
+        LT = "<"
+        TAB = Text.GetCharacter(19)
+        WQ = Text.GetCharacter(34)
+        __Not = "False=True;True=False;"
+        SB_Workaround()
+        fsNormal = 16
+        fn = "Verdana"
+        fsH = "1=32;2=24;3=20;4=16;"
+        fb = false
+        fi = false
+        bc = "#000000" ' font color (brush color)
+        pc = "#000000"
+        pw = 0
+        param = ""
+        styled = ""
+        x3 = 0
+        txt = ""
+        pw = 0
+        paragraph = false
+    End Sub
     Sub LoadWikiText()
         wikiText = "**bold**" + LT + "br>" + CR + LF
         wikiText = wikiText + "_italics_" + LT + "br>" + CR + LF
         wikiText = wikiText + "# Heading 1" + CR + LF
         wikiText = wikiText + "## Heading 2" + CR + LF
         wikiText = wikiText + "### Heading 3" + CR + LF
+        wikiText = wikiText + "#### Heading 4" + CR + LF
         wikiText = wikiText + "- Bullet List" + CR + LF
-        wikiText = wikiText + "   - Bullet List 2" + CR + LF
+        wikiText = wikiText + "    - Bullet List 2" + CR + LF
+        wikiText = wikiText + CR + LF
         wikiText = wikiText + "1. Number List" + CR + LF
-        wikiText = wikiText + "   1. Number List 2" + CR + LF
-        wikiText = wikiText + "![](Turtle.png)" + CR + LF
-        wikiText = wikiText + "|Table Heading 1|Table Heading 2|" + CR + LF
-        wikiText = wikiText + "|---|---|" + CR + LF
-        wikiText = wikiText + "|Row 1 - Cell 1|Row 1 - Cell 2|" + CR + LF
-        wikiText = wikiText + "|Row 2 - Cell 1|Row 2 - Cell 2|" + CR + LF
+        wikiText = wikiText + "    1. Number List 2" + CR + LF
+        wikiText = wikiText + CR + LF
+        wikiText = wikiText + "![Turtle](Turtle.png)" + CR + LF
+        wikiText = wikiText + CR + LF
+        wikiText = wikiText + "[SmallWikiPad](http://github.com/nonkit/SmallWikiPad)" + CR + LF
+        wikiText = wikiText + CR + LF
+        wikiText = wikiText + "| Table Heading 1 | Table Heading 2 |" + CR + LF
+        wikiText = wikiText + "| --- | --- |" + CR + LF
+        wikiText = wikiText + "| Row 1 - Cell 1 | Row 1 - Cell 2 |" + CR + LF
+        wikiText = wikiText + "| Row 2 - Cell 1 | Row 2 - Cell 2 |" + CR + LF
         wikiText = wikiText + "___"
     End Sub
     Sub LoadHTMLText()
@@ -253,6 +343,7 @@ Module SmallWikiPadModule
     End Sub
     Sub Controls_Scroll()
         ' param yMove - relative thumb move
+        Stack.PushValue("local", y)
         i = iDocument
         grp = group(i)
         x = grp("x")
@@ -263,6 +354,7 @@ Module SmallWikiPadModule
             y = ymaxPic
         End If
         Group_Move()
+        y = Stack.PopValue("local")
     End Sub
     Sub Controls_ScrollBar()
         grp = group(iScrollBar)
@@ -366,6 +458,71 @@ Module SmallWikiPadModule
             Next
         End If
     End Sub
+    Sub Font_GetTextWidth()
+        ' param["fs"] - font size
+        ' param["fn"] - font name
+        ' param["fb"] - font bold
+        ' param["fi"] - font italic
+        ' param["text"] - text to get width in px
+        ' return width - text width
+        yc = 4
+        GraphicsWindow.BrushColor = "#FFFFFF"
+        GraphicsWindow.FillRectangle(0, yc, gw, gh - yc)
+        GraphicsWindow.FontSize = param("fs")
+        GraphicsWindow.FontName = param("fn")
+        GraphicsWindow.FontBold = param("fb")
+        GraphicsWindow.FontItalic = param("fi")
+        GraphicsWindow.BrushColor = "#FEFEFE"
+        GraphicsWindow.DrawText(0, yc, "||")
+        y0 = yc
+        y1 = yc + fs
+        x0 = 0
+        x1 = fs * 2
+        If gw < x1 Then
+            x1 = gw - 1
+        End If
+        Font_Measure()
+        px0 = px
+        GraphicsWindow.BrushColor = "#FFFFFF"
+        GraphicsWindow.FillRectangle(0, yc, gw, gh - yc)
+        GraphicsWindow.BrushColor = "Gray"
+        GraphicsWindow.FillRectangle(0, yc + fs, gw, 1)
+        str = "|" + param("text") + "|"
+        GraphicsWindow.BrushColor = "#FEFEFE"
+        GraphicsWindow.DrawText(0, yc, str)
+        x1 = fs * Text.GetLength(str)
+        If gw < x1 Then
+            x1 = gw - 1
+        End If
+        Font_Measure()
+        width = px - px0
+    End Sub
+    Sub Font_Measure()
+        ' return px - width in pixel (px)
+        y = Microsoft.SmallBasic.Library.Math.Floor((y0 + y1) / 2)
+        For x = x0 To x1
+            color = GraphicsWindow.GetPixel(x, y)
+            If __Not(Text.EndsWith(color, "FFFFFF")) Then
+                left = x
+                x = x1 ' break
+            End If
+        Next
+        For x = x1 To x0 Step -1
+            color = GraphicsWindow.GetPixel(x, y)
+            If __Not(Text.EndsWith(color, "FFFFFF")) Then
+                right = x
+                x = x0 ' break
+            End If
+        Next
+        For x = right To x0 Step -1
+            color = GraphicsWindow.GetPixel(x, y)
+            If Text.EndsWith(color, "FFFFFF") Then
+                right = x + 1
+                x = x0 ' break
+            End If
+        Next
+        px = right - left
+    End Sub
     Sub Group_Add()
         ' Group | add shapes to a group
         ' param name - group name
@@ -459,42 +616,6 @@ Module SmallWikiPadModule
             TextWindow.WriteLine("shape[" + j + "]=" + WQ + shape(j) + WQ)
         Next
     End Sub
-    Sub Group_Flip()
-        ' Group | Flip a group
-        ' param group[i] - group to flip
-        ' return group[i] - flipped group
-        grp = group(i)
-        gx = grp("x")
-        gy = grp("y")
-        shape = grp("shape")
-        n = Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
-        For angle = 20 To 180 Step 20
-            _a = Microsoft.SmallBasic.Library.Math.GetRadians(angle)
-            scaleX = Microsoft.SmallBasic.Library.Math.Cos(_a)
-            For j = 1 To n
-                shp = shape(j)
-                Shapes.Zoom(shp("obj"), Microsoft.SmallBasic.Library.Math.Abs(scaleX), 1)
-                cx = shp("x") + (shp("width") / 2)
-                cx = ((cx - grp("cx")) * scaleX) + grp("cx")
-                Shapes.Move(shp("obj"), cx - (shp("width") / 2) + gx, shp("y") + gy)
-                If (angle = 100) And (shp("angle") <> 0) Then
-                    shp("angle") = -shp("angle")
-                    Shapes.Rotate(shp("obj"), shp("angle"))
-                    shape(j) = shp
-                End If
-                If angle = 180 Then
-                    _x = Microsoft.SmallBasic.Library.Math.Floor((cx - (shp("width") / 2)) * 100) / 100
-                    shp("rx") = _x
-                    shp("x") = _x
-                    shape(j) = shp
-                End If
-            Next
-            Program.Delay(20)
-        Next
-        grp("dir") = grp("dir") * -1
-        grp("shape") = shape
-        group(i) = grp
-    End Sub
     Sub Group_Hide()
         ' Group | Hide a group
         ' param group[i] - the group to hide
@@ -582,6 +703,967 @@ Module SmallWikiPadModule
             a = a + 360
         End If
     End Sub
+    Sub Parse_BlankLine()
+        ' EBNF: blank line = [space], CR, LF;
+        ' return match - "True" if match
+        ' return htmlText - null
+        Stack.PushValue("local", pSave)
+        pSave = p
+        Parse_Space()
+        c2 = Text.GetSubText(buf, p, 2)
+        If c2 = (CR + LF) Then
+            htmlText = ""
+            match = true
+            p = p + 2
+        Else
+            match = false
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Block()
+        ' EBNF: block = heading | bullet list | number list | table | horizontal rule | blank line | line;
+        ' return match - "True" if match
+        ' return htmlText - block
+        ' return paragraph - "True" if match with line
+        Parse_Heading()
+        If __Not(match) Then
+            Parse_BulletList()
+        End If
+        If __Not(match) Then
+            Parse_NumberList()
+        End If
+        If __Not(match) Then
+            Parse_Table()
+        End If
+        If __Not(match) Then
+            Parse_HorizontalRule()
+        End If
+        If __Not(match) Then
+            Parse_BlankLine()
+        End If
+        If match Then
+            paragraph = false
+        Else
+            Parse_Line()
+            If match Then
+                paragraph = true
+            End If
+        End If
+    End Sub
+    Sub Parse_Bold()
+        ' EBNF: bold = '**', ( italic | plane text ), '**';
+        ' return match - "True" if match
+        ' return htmlText - bold
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c2 = Text.GetSubText(buf, p, 2)
+        If c2 = CType("**", Primitive) Then
+            p = p + 2
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_Italic()
+            If __Not(match) Then
+                Parse_PlaneText()
+            End If
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = CType("**", Primitive) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "strong>" + htmlText + LT + "/strong>"
+            fb = true
+            fi = false
+            Shapes_AddText()
+            y = y + (fs * 1.5)
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Break()
+        ' EBNF: break = '<', ('B' | 'b'), ('R' | 'r'), '>';
+        ' return match - "True" if match
+        ' return htmlText - break
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c = Text.GetSubText(buf, p, 1)
+        If c = LT Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If Text.IsSubText("Bb", c) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If Text.IsSubText("Rr", c) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType(">", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "br>"
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_BulletList()
+        ' EBNF: bullet list = bullet list item, { bullet list item }, CR, LF;
+        ' return match - "True" if match
+        ' return htmlText - bullet list
+        Stack.PushValue("local", pSave)
+        Stack.PushValue("local", htmlText)
+        pSave = p
+        lastIndent = -1
+        Parse_BulletListItem()
+        If match Then
+            While lastIndent < indent
+                htmlText = LT + "ul>" + CR + LF + htmlText
+                lastIndent = lastIndent + 1
+            End While
+            While match
+                Stack.PushValue("local", htmlText)
+                Parse_BulletListItem()
+                _htmlText = Stack.PopValue("local")
+                If match Then
+                    While lastIndent < indent
+                        htmlText = LT + "ul>" + CR + LF + htmlText
+                        lastIndent = lastIndent + 1
+                    End While
+                    While indent < lastIndent
+                        htmlText = LT + "/ul>" + CR + LF + htmlText
+                        lastIndent = lastIndent - 1
+                    End While
+                    htmlText = Text.Append(_htmlText, htmlText)
+                Else
+                    htmlText = _htmlText
+                End If
+            End While
+            match = true
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        _htmlText = Stack.PopValue("local")
+        If match Then
+            While -1 < indent
+                htmlText = htmlText + LT + "/ul>" + CR + LF
+                indent = indent - 1
+            End While
+        Else
+            htmlText = _htmlText
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_BulletListItem()
+        ' EBNF: bullet list item = { '    ' }, '-', space, text, CR, LF;
+        ' return match - "True" if match
+        ' return indent - number of indent
+        ' return htmlText - bullet list item
+        Stack.PushValue("local", pSave)
+        Stack.PushValue("local", indent)
+        pSave = p
+        indent = 0
+        c4 = Text.GetSubText(buf, p, 4)
+        While c4 = CType("    ", Primitive)
+            indent = indent + 1
+            p = p + 4
+            c4 = Text.GetSubText(buf, p, 4)
+        End While
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("-", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_Space()
+        End If
+        If match Then
+            Parse_Text()
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        _indent = Stack.PopValue("local")
+        If match Then
+            htmlText = LT + "li>" + htmlText + LT + "/li>" + CR + LF
+        Else
+            p = pSave
+            indent = _indent
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Character()
+        ' EBNF: character = '&' | '<' | escape character | normal character;
+        ' return match - "True" if match
+        ' return c - character
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("&", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If __Not(match) Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = LT Then
+                p = p + 1
+                match = true
+            Else
+                match = false
+            End If
+        End If
+        If __Not(match) Then
+            Parse_EscapeCharacter()
+        End If
+        If __Not(match) Then
+            Parse_NormalCharacter()
+        End If
+    End Sub
+    Sub Parse_Column()
+        ' EBNF: column = text, '|';
+        ' return match - "True" if match
+        ' return htmlText - column
+        Stack.PushValue("local", pSave)
+        pSave = p
+        Parse_Text()
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType("|", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "td>" + htmlText + LT + "/td>"
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_EscapeCharacter()
+        ' EBNF: escape character = '\', single character;
+        ' return match - "True" if match
+        ' return c - single character
+        Stack.PushValue("local", pSave)
+        pSave = p
+        match = false
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("\", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If Text.GetCharacterCode(p) < 256 Then
+                p = p + 1
+                match = true
+            Else
+                match = false
+            End If
+        End If
+        If __Not(match) Then
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Heading()
+        ' EBNF: heading = '#', { '#' }, space, text, CR, LF;
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        nH = 0
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("#", Primitive) Then
+            nH = 1
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            While c = CType("#", Primitive)
+                nH = nH + 1
+                p = p + 1
+                c = Text.GetSubText(buf, p, 1)
+            End While
+            match = true
+        End If
+        If match Then
+            Parse_Space()
+        End If
+        If match Then
+            Parse_Text()
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "h" + nH + ">" + htmlText + LT + "/h" + nH + ">" + CR + LF
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_HorizontalRule()
+        ' EBNF: horizontal rule = '___', CR, LF;
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c3 = Text.GetSubText(buf, p, 3)
+        If c3 = CType("___", Primitive) Then
+            p = p + 3
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "hr>" + CR + LF
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Image()
+        ' EBNF: image = '![', [ plane text ], '](', plane text, ')';
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c2 = Text.GetSubText(buf, p, 2)
+        If c2 = CType("![", Primitive) Then
+            p = p + 2
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_PlaneText()
+            If match Then
+                altText = htmlText
+            Else
+                altText = ""
+            End If
+            match = true
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = CType("](", Primitive) Then
+                p = p + 2
+                match = true
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            Parse_PlaneText()
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType(")", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "img src='" + htmlText + "' alt='" + altText + "'>"
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Italic()
+        ' EBNF: italic = '_', ( bold | plane text ), '_';
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("_", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_Bold()
+            If __Not(match) Then
+                Parse_PlaneText()
+            End If
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType("_", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "em>" + htmlText + LT + "/em>"
+            fb = false
+            fi = true
+            Shapes_AddText()
+            y = y + (fs * 1.5)
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Line()
+        ' EBNF: line = text, CR, LF;
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        Parse_Text()
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = htmlText + CR + LF
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Link()
+        ' EBNF: link = '[', [ plane text ], '](', plane text, ')';
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        Stack.PushValue("local", htmlText)
+        pSave = p
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("[", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_PlaneText()
+            If match Then
+                caption = htmlText
+            Else
+                caption = ""
+            End If
+            match = true
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = CType("](", Primitive) Then
+                p = p + 2
+                match = true
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            Parse_PlaneText()
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType(")", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        _htmlText = Stack.PopValue("local")
+        If match Then
+            htmlText = LT + "a href='" + htmlText + "'>" + caption + LT + "/a>"
+        Else
+            p = pSave
+            htmlText = _htmlText
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_NormalCharacter()
+        ' EBNF: normal character = any character;
+        ' return match - "True" if match
+        ' return c - normal character
+        c = Text.GetSubText(buf, p, 1)
+        If c <> CType("", Primitive) Then
+            match = true
+            p = p + 1
+        Else
+            match = false
+        End If
+    End Sub
+    Sub Parse_Number()
+        ' EBNF: number = digit, { digit };
+        ' EBNF: digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+        ' return match - "True" if match
+        ' return htmlText
+        c = Text.GetSubText(buf, p, 1)
+        match = false
+        htmlText = ""
+        While Text.IsSubText("0123456789", c)
+            htmlText = Text.Append(htmlText, c)
+            match = true
+            p = p + 1
+            c = Text.GetSubText(buf, p, 1)
+        End While
+        If match Then
+        End If
+    End Sub
+    Sub Parse_NumberList()
+        ' EBNF: number list = number list item, { number list item }, CR, LF;
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        Stack.PushValue("local", htmlText)
+        pSave = p
+        lastIndent = -1
+        Parse_NumberListItem()
+        If match Then
+            While lastIndent < indent
+                If lastIndent = 0 Then
+                    type = " type='i'"
+                Else
+                    type = ""
+                End If
+                htmlText = LT + "ol" + type + ">" + CR + LF + htmlText
+                lastIndent = lastIndent + 1
+            End While
+            While match
+                Stack.PushValue("local", htmlText)
+                Parse_NumberListItem()
+                _htmlText = Stack.PopValue("local")
+                If match Then
+                    While lastIndent < indent
+                        If lastIndent = 0 Then
+                            type = " type='i'"
+                        Else
+                            type = ""
+                        End If
+                        htmlText = LT + "ol" + type + ">" + CR + LF + htmlText
+                        lastIndent = lastIndent + 1
+                    End While
+                    While indent < lastIndent
+                        htmlText = LT + "/ol>" + CR + LF + htmlText
+                        lastIndent = lastIndent - 1
+                    End While
+                    htmlText = Text.Append(_htmlText, htmlText)
+                Else
+                    htmlText = _htmlText
+                End If
+            End While
+            match = true
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+                p = pSave
+            End If
+        End If
+        _htmlText = Stack.PopValue("local")
+        If match Then
+            While -1 < indent
+                htmlText = htmlText + LT + "/ol>" + CR + LF
+                indent = indent - 1
+            End While
+        Else
+            htmlText = _htmlText
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_NumberListItem()
+        ' EBNF: number list item = { '    ' }, number, '.', space, text, CR, LF;
+        ' return match - "True" if match
+        ' return indent - number of indent
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        Stack.PushValue("local", indent)
+        pSave = p
+        indent = 0
+        c4 = Text.GetSubText(buf, p, 4)
+        While c4 = CType("    ", Primitive)
+            indent = indent + 1
+            p = p + 4
+            c4 = Text.GetSubText(buf, p, 4)
+        End While
+        Parse_Number()
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType(".", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            Parse_Space()
+        End If
+        If match Then
+            Parse_Text()
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        _indent = Stack.PopValue("local")
+        If match Then
+            htmlText = LT + "li>" + htmlText + LT + "/li>" + CR + LF
+        Else
+            p = pSave
+            indent = _indent
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_PlaneText()
+        ' EBNF: plane text = character - ( '|' | CR | LF ), { character - ( '&' | '<' | '*' | '_' | '[' | ']' | ')' | '!' | '|' | ' ' | TAB | CR | LF ) };
+        ' return match - "True" if match
+        ' return htmlText - plane text
+        htmlText = ""
+        c = Text.GetSubText(buf, p, 1)
+        If Text.IsSubText("|" + CR + LF, c) Then
+            match = false
+        Else
+            match = true
+        End If
+        If match Then
+            Parse_Character()
+        End If
+        If match Then
+            If c = CType("&", Primitive) Then
+                htmlText = "&amp;"
+            ElseIf c = CType("<", Primitive) Then
+                htmlText = "&lt;"
+            Else
+                htmlText = c
+            End If
+            While match
+                c = Text.GetSubText(buf, p, 1)
+                If Text.IsSubText("&*_[])!| " + TAB + LT + CR + LF, c) Then
+                    match = false
+                End If
+                If match Then
+                    Parse_Character()
+                End If
+                If match Then
+                    htmlText = Text.Append(htmlText, c)
+                End If
+            End While
+            match = true
+        End If
+        If match Then
+            txt = htmlText
+        End If
+    End Sub
+    Sub Parse_Row()
+        ' EBNF: row = '|', column, { column }, CR, LF;
+        ' return match - "True" if match
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("|", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_Column()
+        End If
+        If match Then
+            While match
+                Stack.PushValue("local", htmlText)
+                Parse_Column()
+                _htmlText = Stack.PopValue("local")
+                If match Then
+                    htmlText = _htmlText + htmlText
+                Else
+                    htmlText = _htmlText
+                End If
+            End While
+            match = true
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            htmlText = LT + "tr>" + htmlText + LT + "/tr>" + CR + LF
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Separator()
+        ' EBNF: separator = '|', separator column, { separator column }, CR, LF;
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        c = Text.GetSubText(buf, p, 1)
+        If c = CType("|", Primitive) Then
+            p = p + 1
+            match = true
+        Else
+            match = false
+        End If
+        If match Then
+            Parse_SeparatorColumn()
+        End If
+        If match Then
+            While match
+                Parse_SeparatorColumn()
+            End While
+            match = true
+        End If
+        If match Then
+            c2 = Text.GetSubText(buf, p, 2)
+            If c2 = (CR + LF) Then
+                p = p + 2
+            Else
+                match = false
+            End If
+        End If
+        If __Not(match) Then
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_SeparatorColumn()
+        ' EBNF: separator column = space, '---', space, '|';
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        Parse_Space()
+        If match Then
+            c3 = Text.GetSubText(buf, p, 3)
+            If c3 = CType("---", Primitive) Then
+                p = p + 3
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+            Parse_Space()
+        End If
+        If match Then
+            c = Text.GetSubText(buf, p, 1)
+            If c = CType("|", Primitive) Then
+                p = p + 1
+            Else
+                match = false
+            End If
+        End If
+        If match Then
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Space()
+        ' EBNF: space = { ' ' | TAB };
+        ' return match - "True" if match
+        ' return c - space
+        match = false
+        c = Text.GetSubText(buf, p, 1)
+        While (c = CType(" ", Primitive)) Or (c = TAB)
+            match = true
+            p = p + 1
+            c = Text.GetSubText(buf, p, 1)
+        End While
+        If match Then
+            c = " "
+        Else
+            c = ""
+        End If
+    End Sub
+    Sub Parse_Span()
+        ' EBNF: span = bold | italic | image | link | break | plane text;
+        ' return match - "True" if match
+        ' return htmlText
+        Parse_Bold()
+        If __Not(match) Then
+            Parse_Italic()
+        End If
+        If __Not(match) Then
+            Parse_Image()
+        End If
+        If __Not(match) Then
+            Parse_Link()
+        End If
+        If __Not(match) Then
+            Parse_Break()
+        End If
+        If __Not(match) Then
+            Parse_PlaneText()
+        End If
+    End Sub
+    Sub Parse_Table()
+        ' EBNF: table = row, separator, row, { row };
+        ' return match - "True" if match
+        ' return htmlText
+        Stack.PushValue("local", pSave)
+        pSave = p
+        Parse_Row()
+        If match Then
+            Parse_Separator()
+        End If
+        If match Then
+            Stack.PushValue("local", htmlText)
+            Parse_Row()
+            _htmlText = Stack.PopValue("local")
+            If match Then
+                htmlText = _htmlText + htmlText
+            Else
+                htmlText = _htmlText
+            End If
+        End If
+        If match Then
+            While match
+                Stack.PushValue("local", htmlText)
+                Parse_Row()
+                _htmlText = Stack.PopValue("local")
+                If match Then
+                    htmlText = _htmlText + htmlText
+                Else
+                    htmlText = _htmlText
+                End If
+            End While
+            match = true
+        End If
+        If match Then
+            htmlText = LT + "table border='1'>" + CR + LF + htmlText + LT + "/table>" + CR + LF
+        Else
+            p = pSave
+        End If
+        pSave = Stack.PopValue("local")
+    End Sub
+    Sub Parse_Text()
+        ' EBNF: text = span, { span };
+        ' return match - "True" if match
+        ' return htmlText
+        Parse_Span()
+        If match Then
+            While match
+                Stack.PushValue("local", htmlText)
+                Parse_Span()
+                _htmlText = Stack.PopValue("local")
+                If match Then
+                    htmlText = Text.Append(_htmlText, htmlText)
+                Else
+                    htmlText = _htmlText
+                End If
+            End While
+            match = true
+        End If
+    End Sub
+    Sub Parse_WikiText()
+        ' EBNF: Wiki text = { block };
+        ' param wikiText
+        ' return match - "True" if match
+        ' return htmlText
+        buf = wikiText
+        p = 1
+        Parse_Block()
+        If match And paragraph Then
+            htmlText = LT + "p>" + htmlText
+        End If
+        While match
+            Stack.PushValue("local", htmlText)
+            lastParagraph = paragraph
+            Parse_Block()
+            _htmlText = Stack.PopValue("local")
+            If match Then
+                If __Not(lastParagraph) And paragraph Then
+                    _htmlText = _htmlText + LT + "p>"
+                End If
+                If lastParagraph And __Not(paragraph) Then
+                    _htmlText = _htmlText + LT + "/p>" + CR + LF
+                End If
+                htmlText = Text.Append(_htmlText, htmlText)
+            Else
+                htmlText = _htmlText
+            End If
+        End While
+        match = true
+        If paragraph Then
+            htmlText = htmlText + LT + "/p>" + CR + LF
+        End If
+    End Sub
     Sub SB_RotateWorkaround()
         ' Small Basic | Rotate workaround for Silverlight
         ' param shp - current shape
@@ -665,6 +1747,69 @@ Module SmallWikiPadModule
             shape(i) = shp
         Next
     End Sub
+    Sub Shapes_AddText()
+        ' param x, y - top left position
+        ' param txt - text
+        Shapes_EntryClear()
+        Shapes_PenToEntry()
+        Shapes_BrushToEntry()
+        Shapes_FontToEntry()
+        func = "text"
+        Shapes_FuncToEntry()
+        Shapes_MoveToEntry()
+        Shapes_RotateToEntry()
+        Shapes_EntryToArray()
+    End Sub
+    Sub Shapes_BrushToEntry()
+        GraphicsWindow.BrushColor = bc
+        shp("bc") = bc
+    End Sub
+    Sub Shapes_EntryClear()
+        shp = ""
+    End Sub
+    Sub Shapes_EntryToArray()
+        iMax = iMax + 1
+        shape(iMax) = shp
+    End Sub
+    Sub Shapes_FontToEntry()
+        GraphicsWindow.FontSize = fs
+        shp("fs") = fs
+        GraphicsWindow.FontName = fn
+        shp("fn") = fn
+        GraphicsWindow.FontBold = fb
+        shp("fb") = fb
+        GraphicsWindow.FontItalic = fi
+        shp("fi") = fi
+    End Sub
+    Sub Shapes_FuncToEntry()
+        shp("func") = func
+        If func = CType("ell", Primitive) Then
+            obj = Shapes.AddEllipse(width, height)
+            shp("width") = Microsoft.SmallBasic.Library.Math.Floor(width * 100) / 100
+            shp("height") = Microsoft.SmallBasic.Library.Math.Floor(height * 100) / 100
+        ElseIf func = CType("rect", Primitive) Then
+            obj = Shapes.AddRectangle(width, height)
+            shp("width") = Microsoft.SmallBasic.Library.Math.Floor(width * 100) / 100
+            shp("height") = Microsoft.SmallBasic.Library.Math.Floor(height * 100) / 100
+        ElseIf func = CType("tri", Primitive) Then
+            obj = Shapes.AddTriangle(x1, y1, x2, y2, x3, y3)
+            shp("x1") = Microsoft.SmallBasic.Library.Math.Floor(x1 * 100) / 100
+            shp("y1") = Microsoft.SmallBasic.Library.Math.Floor(y1 * 100) / 100
+            shp("x2") = Microsoft.SmallBasic.Library.Math.Floor(x2 * 100) / 100
+            shp("y2") = Microsoft.SmallBasic.Library.Math.Floor(y2 * 100) / 100
+            shp("x3") = Microsoft.SmallBasic.Library.Math.Floor(x3 * 100) / 100
+            shp("y3") = Microsoft.SmallBasic.Library.Math.Floor(y3 * 100) / 100
+        ElseIf func = CType("line", Primitive) Then
+            obj = Shapes.AddLine(x1, y1, x2, y2)
+            shp("x1") = Microsoft.SmallBasic.Library.Math.Floor(x1 * 100) / 100
+            shp("y1") = Microsoft.SmallBasic.Library.Math.Floor(y1 * 100) / 100
+            shp("x2") = Microsoft.SmallBasic.Library.Math.Floor(x2 * 100) / 100
+            shp("y2") = Microsoft.SmallBasic.Library.Math.Floor(y2 * 100) / 100
+        ElseIf func = CType("text", Primitive) Then
+            obj = Shapes.AddText(txt)
+            shp("text") = txt
+        End If
+    End Sub
     Sub Shapes_Init()
         ' Shapes | Initialize shapes data
         ' return shX, shY - current position of shapes
@@ -672,28 +1817,48 @@ Module SmallWikiPadModule
         shX = 10 ' x offset
         shY = 10 ' y offset
         shape = ""
-        shape(1) = "func=text;x=0;y=0;fn=Segoe UI;fs=12;fb=True;text=bold;bc=#000000;"
-        shape(2) = "func=text;x=0;y=16;fn=Segoe UI;fs=12;fi=True;text=italics;bc=#000000;"
-        shape(3) = "func=text;x=0;y=32;fn=Segoe UI;fs=36;fb=True;text=Heading 1;bc=#000000;"
-        shape(4) = "func=text;x=0;y=72;fn=Segoe UI;fs=26;fb=True;text=Heading 2;bc=#000000;"
-        shape(5) = "func=text;x=0;y=102;fn=Segoe UI;fs=16;fb=True;text=Heading 3;bc=#000000;"
-        shape(6) = "func=ell;x=20;y=128;x2=50;y2=54;width=5;height=5;bc=#000000;pw=0;"
-        shape(7) = "func=text;x=30;y=122;fn=Segoe UI;fs=12;text=Bullet List;bc=#000000;"
-        shape(8) = "func=ell;x=40;y=148;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
-        shape(9) = "func=text;x=50;y=142;fn=Segoe UI;fs=12;text=Bullet List 2;bc=#000000;"
-        shape(10) = "func=text;x=18;y=158;fn=Segoe UI;fs=12;text=1. Number List;bc=#000000;"
-        shape(11) = "func=text;x=38;y=174;fn=Segoe UI;fs=12;text=i. Number List 2;bc=#000000;"
-        shape(12) = "func=img;x=0;y=190;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
-        shape(13) = "func=rect;x=0;y=442;width=200;height=54;bc=#FFFFFF;pc=#666666;pw=1;"
-        shape(14) = "func=rect;x=0;y=460;width=200;height=1;pc=#666666;pw=1;"
-        shape(15) = "func=rect;x=0;y=478;width=200;height=1;pc=#666666;pw=1;"
-        shape(16) = "func=rect;x=100;y=442;width=1;height=54;pc=#666666;pw=1;"
-        shape(17) = "func=text;x=2;y=442;fn=Segoe UI;fs=12;fb=True;text=Table Heading 1;bc=#000000;"
-        shape(18) = "func=text;x=102;y=442;fn=Segoe UI;fs=12;fb=True;text=Table Heading 2;bc=#000000;"
-        shape(19) = "func=text;x=2;y=460;fn=Segoe UI;fs=12;text=Row 1-Cell 1;bc=#000000;"
-        shape(20) = "func=text;x=102;y=460;fn=Segoe UI;fs=12;text=Row 1-Cell 2;bc=#000000;"
-        shape(21) = "func=text;x=2;y=478;fn=Segoe UI;fs=12;text=Row 2-Cell 1;bc=#000000;"
-        shape(22) = "func=text;x=102;y=478;fn=Segoe UI;fs=12;text=Row 2-Cell 2;bc=#000000;"
-        shape(23) = "func=rect;x=0;y=500;width=578;height=1;pc=#666666;pw=1;"
+        shape(1) = "func=text;x=0;y=0;fn=Verdana;fs=16;fb=True;text=bold;bc=#000000;"
+        shape(2) = "func=text;x=0;y=20;fn=Verdana;fs=16;fi=True;text=italics;bc=#000000;"
+        shape(3) = "func=text;x=0;y=43;fn=Verdana;fs=32;fb=True;text=Heading 1;bc=#000000;"
+        shape(4) = "func=text;x=0;y=84;fn=Verdana;fs=24;fb=True;text=Heading 2;bc=#000000;"
+        shape(5) = "func=text;x=0;y=115;fn=Verdana;fs=20;fb=True;text=Heading 3;bc=#000000;"
+        shape(6) = "func=text;x=0;y=140;fn=Verdana;fs=16;fb=True;text=Heading 4;bc=#000000;"
+        shape(7) = "func=ell;x=20;y=167;x2=50;y2=54;width=5;height=5;bc=#000000;pw=0;"
+        shape(8) = "func=text;x=30;y=160;fn=Verdana;fs=16;text=Bullet List;bc=#000000;"
+        shape(9) = "func=ell;x=40;y=187;x2=50;y2=54;width=5;height=5;bc=#FFFFFF;pc=#000000;pw=1;"
+        shape(10) = "func=text;x=50;y=180;fn=Verdana;fs=16;text=Bullet List 2;bc=#000000;"
+        shape(11) = "func=text;x=18;y=200;fn=Verdana;fs=16;text=1. Number List;bc=#000000;"
+        shape(12) = "func=text;x=38;y=220;fn=Verdana;fs=16;text=i. Number List 2;bc=#000000;"
+        shape(13) = "func=img;x=0;y=238;src=http://www.nonkit.com/smallbasic.files/Turtle.png;"
+        shape(14) = "func=rect;x=0;y=490;width=298;height=60;bc=#FFFFFF;pc=#666666;pw=1;"
+        shape(15) = "func=rect;x=0;y=510;width=298;height=1;pc=#666666;pw=1;"
+        shape(16) = "func=rect;x=0;y=530;width=298;height=1;pc=#666666;pw=1;"
+        shape(17) = "func=rect;x=149;y=490;width=1;height=60;pc=#666666;pw=1;"
+        shape(18) = "func=text;x=2;y=490;fn=Verdana;fs=16;fb=True;text=Table Heading 1;bc=#000000;"
+        shape(19) = "func=text;x=151;y=490;fn=Verdana;fs=16;fb=True;text=Table Heading 2;bc=#000000;"
+        shape(20) = "func=text;x=2;y=510;fn=Verdana;fs=16;text=Row 1-Cell 1;bc=#000000;"
+        shape(21) = "func=text;x=151;y=510;fn=Verdana;fs=16;text=Row 1-Cell 2;bc=#000000;"
+        shape(22) = "func=text;x=2;y=530;fn=Verdana;fs=16;text=Row 2-Cell 1;bc=#000000;"
+        shape(23) = "func=text;x=151;y=530;fn=Verdana;fs=16;text=Row 2-Cell 2;bc=#000000;"
+        shape(24) = "func=rect;x=0;y=554;width=578;height=1;pc=#666666;pw=1;"
+    End Sub
+    Sub Shapes_MoveToEntry()
+        Shapes.Move(obj, shX + x, shY + y)
+        shp("x") = Microsoft.SmallBasic.Library.Math.Floor(x * 100) / 100
+        shp("y") = Microsoft.SmallBasic.Library.Math.Floor(y * 100) / 100
+    End Sub
+    Sub Shapes_PenToEntry()
+        GraphicsWindow.PenWidth = pw
+        shp("pw") = pw
+        If 0 < pw Then
+            GraphicsWindow.PenColor = pc
+            shp("pc") = pc
+        End If
+    End Sub
+    Sub Shapes_RotateToEntry()
+        If angle <> 0 Then
+            Shapes.Rotate(obj, angle)
+            shp("angle") = Microsoft.SmallBasic.Library.Math.Floor(angle * 100) / 100
+        End If
     End Sub
 End Module
