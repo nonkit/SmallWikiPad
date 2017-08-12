@@ -1,13 +1,13 @@
 ![icon](img/WikiPadIcon.png)
 # Small Wiki Pad
 
-Version 0.43a
+Version 0.5.0b
 
 RELEASE NOTES
 
-- This version is for demo.
-- Minor change.
+- Supported conversion from wiki to html.
 
 Known Issues
 
 - #3 Can't edit wiki.
+- #16 Not supported conversion from wiki to preview.
