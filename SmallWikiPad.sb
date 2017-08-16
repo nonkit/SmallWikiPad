@@ -1,16 +1,14 @@
 ' Small Wiki Pad
-' Version 0.5.0b
+' Version 0.5.1b
 ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
-' Last update 2017-08-12
-' Program ID NVD371-6
+' Last update 2017-08-15
+' Program ID NVD371-7
 
-GraphicsWindow.Title = "Small Wiki Pad 0.5.0b"
+GraphicsWindow.Title = "Small Wiki Pad 0.5.1b"
 Init()
 Form()
 LoadWikiText()
 Controls.SetTextBoxText(tbox, wikiText)
-Parse_WikiText()
-'LoadHTMLText()
 GraphicsWindow.MouseDown = OnMouseDown
 GraphicsWindow.MouseMove = OnMouseMove
 While "True"
@@ -30,8 +28,13 @@ EndWhile
 Sub ChangeTab
   i = lastTabClicked
   If i <> iLast Then
-    Shapes.ShowShape(hline[iLast]) 
+    Shapes.ShowShape(hline[iLast])
+    Shapes.SetOpacity(shadow[iLast], 20)
     Shapes.HideShape(hline[i])
+    Shapes.SetOpacity(shadow[i], 0)
+    If iLast = 1 Then
+      Update()
+    EndIf
     If (i = 1) Or (i = 2) Then
       If iLast = 3 Then
         Stack.PushValue("local", i)
@@ -60,7 +63,7 @@ Sub ChangeTab
       Controls.HideControl(tbox)
       ' initialize shapes
       If iDocument = "" Then
-        Shapes_Init()
+        Shapes_Restore()
         scale = 1
         angle = 0
         ' add shapes
@@ -93,13 +96,20 @@ Sub ChangeTab
       i = iTabs
       Group_Remove()
       Group_Add()
-      For _i = 1 To 3
-        shp = shape[_i * 3]
-        menu[_i] = shp["obj"]
-        shp = shape[_i * 3 + 2]
-        hline[_i] = shp["obj"]
-      EndFor
       i = Stack.PopValue("local")
+      For _i = 1 To 3
+        shp = shape[_i * 4 - 1]
+        menu[_i] = shp["obj"]
+        shp = shape[_i * 4 + 1]
+        hline[_i] = shp["obj"]
+        shp = shape[_i * 4 + 2]
+        shadow[_i] = shp["obj"]
+        If _i = i Then
+          Shapes.SetOpacity(shadow[_i], 0)
+        Else
+          Shapes.SetOpacity(shadow[_i], 20)
+        EndIf
+      EndFor
       Shapes.HideShape(hline[i])
     EndIf
     iLast = i
@@ -119,13 +129,14 @@ Sub Form
   GraphicsWindow.FontBold = "False"
   GraphicsWindow.PenWidth = 1
   GraphicsWindow.PenColor = "#666666"
-  posX = "1=5;2=105;3=205;4=305;"
+  posX = "1=0;2=100;3=200;4=300;"
   item = "1=Wiki;2=HTML;3=Preview;"
   scale = 1
   Controls_AddTabs()
   iTabs = nGroup
-  tbox = Controls.AddMultiLineTextBox(posX[1], 35)
-  Controls.SetSize(tbox, gw - 10, gh - 40)
+  GraphicsWindow.BrushColor = "#000"
+  tbox = Controls.AddMultiLineTextBox(posX[1], 31)
+  Controls.SetSize(tbox, gw, gh - 31)
 EndSub
 
 Sub Init
@@ -139,17 +150,20 @@ Sub Init
   fsNormal = 16
   fn = "Verdana"
   fsH = "1=32;2=24;3=20;4=16;"
+  roman = "1=i;2=ii;3=iii;4=iv;5=v;6=vi;7=vii;8=viii;9=ix;10=x;11=xi;12=xii;"
   fb = "False"
   fi = "False"
   bc = "#000000"  ' font color (brush color)
   pc = "#000000"
   pw = 0
   param = ""
-  styled = ""
+  shX = 10
+  shY = 10
   x3 = 0
   txt = ""
   pw = 0
-  paragraph = "False"
+  paragraph = "True"
+  lineHeight = fsNormal * 1.5
 EndSub
 
 Sub LoadWikiText
@@ -165,7 +179,7 @@ Sub LoadWikiText
   wikiText = wikiText + "1. Number List" + CR + LF
   wikiText = wikiText + "    1. Number List 2" + CR + LF
   wikiText = wikiText + CR + LF
-  wikiText = wikiText + "![Turtle](Turtle.png)" + CR + LF
+  wikiText = wikiText + "![Turtle](http://www.nonkit.com/smallbasic.files/Turtle.png)" + CR + LF
   wikiText = wikiText + CR + LF
   wikiText = wikiText + "[SmallWikiPad](http://github.com/nonkit/SmallWikiPad)" + CR + LF
   wikiText = wikiText + CR + LF
@@ -174,39 +188,6 @@ Sub LoadWikiText
   wikiText = wikiText + "| Row 1 - Cell 1 | Row 1 - Cell 2 |" + CR + LF
   wikiText = wikiText + "| Row 2 - Cell 1 | Row 2 - Cell 2 |" + CR + LF
   wikiText = wikiText + "___" + CR + LF
-EndSub
-
-Sub LoadHTMLText
-  htmlText = LT + "html>" + CR + LF
-  htmlText = htmlText + LT + "body>" + CR + LF
-  htmlText = htmlText + LT + "p>" + CR + LF
-  htmlText = htmlText + LT + "strong>bold" + LT + "/strong>" + LT + "br>" + CR + LF
-  htmlText = htmlText + LT + "em>italics" + LT + "/em>" + LT + "br>" + CR + LF
-  htmlText = htmlText + LT + "/p>" + CR + LF
-  htmlText = htmlText + LT + "h1>Heading 1" + LT + "/h1>" + CR + LF
-  htmlText = htmlText + LT + "h2>Heading 2" + LT + "/h2>" + CR + LF
-  htmlText = htmlText + LT + "h3>Heading 3" + LT + "/h3>" + CR + LF
-  htmlText = htmlText + LT + "ul>" + CR + LF
-  htmlText = htmlText + LT + "li>Bullet List" + LT + "/li>" + LT + "br>" + CR + LF
-  htmlText = htmlText + LT + "ul>" + CR + LF
-  htmlText = htmlText + LT + "li>Bullet List 2" + LT + "/li>" + CR + LF
-  htmlText = htmlText + LT + "/ul>" + CR + LF
-  htmlText = htmlText + LT + "/ul>" + CR + LF
-  htmlText = htmlText + LT + "ol>" + CR + LF
-  htmlText = htmlText + LT + "li>Number List" + LT + "/li>" + LT + "br>" + CR + LF
-  htmlText = htmlText + LT + "ol typr=i>" + CR + LF
-  htmlText = htmlText + LT + "li>Number List 2" + LT + "/li>" + CR + LF
-  htmlText = htmlText + LT + "/ol>" + CR + LF
-  htmlText = htmlText + LT + "/ol>" + CR + LF
-  htmlText = htmlText + LT + "p>" + LT + "img src='http://www.nonkit.com/smallbasic.files/Turtle.png'>" + LT + "/p>" + CR + LF
-  htmlText = htmlText + LT + "table border=1>" + CR + LF
-  htmlText = htmlText + LT + "tr>" + LT + "th>Table Heading 1" + LT + "/th>" + LT + "th>Table Heading 2" + LT + "/th>" + LT + "/tr>" + CR + LF
-  htmlText = htmlText + LT + "tr>" + LT + "td>Row 1-Cell 1" + LT + "/td>" + LT + "td>Row 1-Cell 2" + LT + "/td>" + LT + "/tr>" + CR + LF
-  htmlText = htmlText + LT + "tr>" + LT + "td>Row 2-Cell 1" + LT + "/td>" + LT + "td>Row 2-Cell 2" + LT + "/td>" + LT + "/tr>" + CR + LF
-  htmlText = htmlText + LT + "/table>" + CR + LF
-  htmlText = htmlText + LT + "hr>" + CR + LF
-  htmlText = htmlText + LT + "/body>" + CR + LF
-  htmlText = htmlText + LT + "/html>"
 EndSub
 
 Sub OnMouseDown
@@ -221,29 +202,57 @@ Sub OnMouseMove
   mouseMove = "True"
 EndSub
 
+Sub Update
+  wikiText = Controls.GetTextBoxText(tbox)
+  If wikiText <> lastWikiText Then
+    name = "document"
+    Group_Remove()
+    shape = ""
+    iMax = 0
+    x = 0
+    y = 0
+    lineHeight = fsNormal * 1.5
+    Parse_WikiText()
+    shX = 10
+    shY = 10
+    Shapes_Save()
+    lastWikiText = wikiText
+    iDocument = ""
+  EndIf
+EndSub
+
 Sub Controls_AddTabs
   ' param item[] - tab items
   shX = 0 ' x offset
   shY = 0 ' y offset
   shape = ""
-  shape[1] = "func=rect;x=0;y=0;width="+gw+";height=32;pw=0;bc=#FFFFFF;"
-  shape[2] = "func=line;x="+posX[1]+";y=5;x1=0;y1=0;x2="+(posX[4]-posX[1])+";y2=0;pw=1;pc=#666666;"
+  shape[1] = "func=rect;x=0;y=0;width="+gw+";height=32;pw=0;bc=#FFF;"
+  shape[2] = "func=line;x="+posX[1]+";y=1;x1=0;y1=0;x2="+(posX[4]-posX[1])+";y2=0;pw=1;pc=#666;"
   n = Array.GetItemCount(item)
   For i = 1 To n
-    shape[i * 3] = "func=text;x="+(posX[i]+5)+";y=10;text="+item[i]+";fn=Segoe UI;fs=12;"
-    shape[i * 3 + 1] = "func=line;x="+posX[i]+";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
-    shape[i * 3 + 2] = "func=line;x="+posX[i]+";y=30;x1=0;y1=0;x2="+(posX[i+1]-posX[i])+";y2=0;pw=1;pc=#666666;"
+    shape[i * 4 - 1] = "func=text;x="+(posX[i]+5)+";y=10;text="+item[i]+";fn=Segoe UI;fs=12;"
+    shape[i * 4] = "func=line;x="+posX[i]+";y=0;x1=0;y1=0;x2=0;y2=31;pw=1;pc=#666;"
+    shape[i * 4 + 1] = "func=line;x="+posX[i]+";y=31;x1=0;y1=0;x2="+(posX[i+1]-posX[i])+";y2=0;pw=1;pc=#666;"
+    shape[i * 4 + 2] = "func=rect;x="+posX[i]+";y=0;width="+(posX[i+1]-posX[i])+";height=32;pw=0;bc=#000;"
   EndFor
   iLast = 1
-  shape[n * 3 + 3] = "func=line;x="+posX[4]+";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
-  shape[n * 3 + 4] = "func=line;x="+posX[4]+";y=30;x1=0;y1=0;x2="+(gw-5-posX[4])+";y2=0;pw=1;pc=#666666;"
+  shape[n * 4 + 3] = "func=line;x="+posX[4]+";y=0;x1=0;y1=0;x2=0;y2=31;pw=1;pc=#666;"
+  shape[n * 4 + 4] = "func=rect;x="+(posX[4]+1)+";y=0;width="+(gw-posX[4]-1)+";height=32;pw=0;bc=#BBB;"
+  shape[n * 4 + 5] = "func=line;x="+posX[4]+";y=31;x1=0;y1=0;x2="+(gw-posX[4])+";y2=0;pw=1;pc=#666;"
   name = "tabs"
   Group_Add()
   For i = 1 To n
-    shp = shape[i * 3]
+    shp = shape[i * 4 - 1]
     menu[i] = shp["obj"]
-    shp = shape[i * 3 + 2]
+    shp = shape[i * 4 + 1]
     hline[i] = shp["obj"]
+    shp = shape[i * 4 + 2]
+    shadow[i] = shp["obj"]
+    If i = iLast Then
+      Shapes.SetOpacity(shadow[i], 0)
+    Else
+      Shapes.SetOpacity(shadow[i], 20)
+    EndIf
   EndFor
   Shapes.HideShape(hline[iLast])
 EndSub
@@ -405,19 +414,19 @@ Sub Controls_TabClick
 EndSub
 
 Sub Font_GetTextWidth
-  ' param["fs"] - font size
-  ' param["fn"] - font name
-  ' param["fb"] - font bold
-  ' param["fi"] - font italic
-  ' param["text"] - text to get width in px
+  ' param fs - font size
+  ' param fn - font name
+  ' param fb - font bold
+  ' param fi - font italic
+  ' param txt - text to get width in px
   ' return width - text width
   yc = 4
   GraphicsWindow.BrushColor = "#FFFFFF"
   GraphicsWindow.FillRectangle(0, yc, gw, gh - yc)
-  GraphicsWindow.FontSize = param["fs"]
-  GraphicsWindow.FontName = param["fn"]
-  GraphicsWindow.FontBold = param["fb"]
-  GraphicsWindow.FontItalic = param["fi"]
+  GraphicsWindow.FontSize = fs
+  GraphicsWindow.FontName = fn
+  GraphicsWindow.FontBold = fb
+  GraphicsWindow.FontItalic = fi
   GraphicsWindow.BrushColor = "#FEFEFE"
   GraphicsWindow.DrawText(0, yc, "||")
   y0 = yc
@@ -433,7 +442,7 @@ Sub Font_GetTextWidth
   GraphicsWindow.FillRectangle(0, yc, gw, gh - yc)
   GraphicsWindow.BrushColor = "Gray"
   GraphicsWindow.FillRectangle(0, yc + fs, gw, 1)
-  str = "|" + param["text"] + "|"
+  str = "|" + txt + "|"
   GraphicsWindow.BrushColor = "#FEFEFE"
   GraphicsWindow.DrawText(0, yc, str)
   x1 = fs * Text.GetLength(str)
@@ -446,26 +455,26 @@ EndSub
 
 Sub Font_Measure
   ' return px - width in pixel (px)
-  y = Math.Floor((y0 + y1) / 2)
-  For x = x0 To x1
-    color = GraphicsWindow.GetPixel(x, y)
+  _y = Math.Floor((y0 + y1) / 2)
+  For _x = x0 To x1
+    color = GraphicsWindow.GetPixel(_x, _y)
     If Not[Text.EndsWith(color, "FFFFFF")] Then
-      left = x
-      x = x1  ' break
+      left = _x
+      _x = x1  ' exit For
     EndIf
   EndFor
-  For x = x1 To x0 Step -1
-    color = GraphicsWindow.GetPixel(x, y)
+  For _x = x1 To x0 Step -1
+    color = GraphicsWindow.GetPixel(_x, _y)
     If Not[Text.EndsWith(color, "FFFFFF")] Then
-      right = x
-      x = x0  ' break
+      right = _x
+      _x = x0  ' exit For
     EndIf
   EndFor
-  For x = right To x0 Step -1
-    color = GraphicsWindow.GetPixel(x, y)
+  For _x = right To x0 Step -1
+    color = GraphicsWindow.GetPixel(_x, _y)
     If Text.EndsWith(color, "FFFFFF") Then
-      right = x + 1
-      x = x0  ' break
+      right = _x + 1
+      _x = x0  ' exit For
     EndIf
   EndFor
   px = right - left
@@ -482,6 +491,7 @@ Sub Group_Add
   Stack.PushValue("local", i)
   Stack.PushValue("local", x)
   Stack.PushValue("local", y)
+  Stack.PushValue("local", s)
   nGroup = nGroup + 1
   grp = ""
   grp["name"] = name
@@ -524,7 +534,7 @@ Sub Group_Add
       GraphicsWindow.FontItalic = shp["fi"]
       shp["obj"] = Shapes.AddText(shp["text"])
     ElseIf shp["func"] = "img" Then
-      shp["obj"] = Shapes.AddImage(shp["src"])
+      shp["obj"] = Shapes.AddImage(shp["img"])
       Shapes.Move(shp["obj"], shp["x"], shp["y"])
     EndIf
     x = shp["x"]
@@ -545,6 +555,7 @@ Sub Group_Add
   EndFor
   grp["shape"] = shape
   group[nGroup] = grp
+  s = Stack.PopValue("local")
   y = Stack.PopValue("local")
   x = Stack.PopValue("local")
   i = Stack.PopValue("local")
@@ -553,6 +564,7 @@ EndSub
 Sub Group_Dump
   ' Gourp | Dump a group for debug
   ' param group[i] - group to dump
+  Stack.PushValue("local", j)
   grp = group[i]
   TextWindow.WriteLine("name=" + grp["name"])
   TextWindow.WriteLine("x=" + grp["x"])
@@ -564,6 +576,7 @@ Sub Group_Dump
   For j = 1 To Array.GetItemCount(shape)
     TextWindow.WriteLine("shape[" + j + "]=" + WQ + shape[j] + WQ)
   EndFor
+  j = Stack.PopValue("local")
 EndSub
 
 Sub Group_Hide
@@ -585,6 +598,9 @@ Sub Group_Move
   ' param group[i] - the group to move
   ' param x, y - the position to move
   ' return group[i] - the updated group
+  Stack.PushValue("local", s)
+  Stack.PushValue("local", n)
+  Stack.PushValue("local", j)
   grp = group[i]
   s = grp["scale"]
   grp["x"] = x
@@ -603,6 +619,9 @@ Sub Group_Move
     Shapes.Move(shp["obj"], grp["x"] + _x * s, grp["y"] + _y * s)
   EndFor
   group[i] = grp
+  j = Stack.PopValue("local")
+  n = Stack.PopValue("local")
+  s = Stack.PopValue("local")
 EndSub
 
 Sub Group_Remove
@@ -659,7 +678,7 @@ Sub Math_CartesianToPolar
 EndSub
 
 Sub Parse_BlankLine
-  ' EBNF: blank line = [space], CR, LF;
+  ' EBNF: blank line = [ space ], CR, LF;
   ' return match - "True" if match
   ' return htmlText - null
   Stack.PushValue("local", pSave)
@@ -677,10 +696,31 @@ Sub Parse_BlankLine
   pSave = Stack.PopValue("local")
 EndSub
 
-Sub Parse_Block
-  ' EBNF: block = heading | bullet list | number list | table | horizontal rule | blank line | line;
+Sub Parse_BlankLines
+  ' EBNF: blank lines = blank line, { blank line };
   ' return match - "True" if match
-  ' return htmlText - block
+  ' return htmlText - null
+  Parse_BlankLine()
+  If match Then
+    While match
+      Parse_BlankLine()
+    EndWhile
+    match = "True"
+  EndIf
+  If match Then
+    If paragraph Then
+      y = y + lineHeight + fsNormal
+      x = 0
+      lineHeight = fsNormal * 1.5
+    EndIf
+    y = y + fsNormal
+  EndIf
+EndSub
+
+Sub Parse_Block
+  ' EBNF: block = heading | bullet list | number list | table | horizontal rule | blank lines | line;
+  ' return match - "True" if match
+  ' return htmlText - HTML text of block
   ' return paragraph - "True" if match with line
   Parse_Heading()
   If Not[match] Then
@@ -696,7 +736,7 @@ Sub Parse_Block
     Parse_HorizontalRule()
   EndIf
   If Not[match] Then
-    Parse_BlankLine()
+    Parse_BlankLines()
   EndIf
   If match Then
     paragraph = "False"
@@ -709,7 +749,7 @@ Sub Parse_Block
 EndSub
 
 Sub Parse_Bold
-  ' EBNF: bold = '**', ( italic | plane text ), '**';
+  ' EBNF: bold = '**', ( italic | text ), '**';
   ' return match - "True" if match
   ' return htmlText - bold
   Stack.PushValue("local", pSave)
@@ -724,7 +764,11 @@ Sub Parse_Bold
   If match Then
     Parse_Italic()
     If Not[match] Then
-      Parse_PlaneText()
+      delim = "**"
+      Parse_Text()
+      If match Then
+        htmlText = txt
+      EndIf
     EndIf
   EndIf
   If match Then
@@ -737,10 +781,12 @@ Sub Parse_Bold
   EndIf
   If match Then
     htmlText = LT + "strong>" + htmlText + LT + "/strong>"
+    _fb = fb
     fb = "True"
-    fi = "False"
+    fs = fsNormal
     Shapes_AddText()
-    y = y + fs * 1.5
+    x = x + width
+    fb = _fb
   Else
     p = pSave
   EndIf
@@ -750,7 +796,7 @@ EndSub
 Sub Parse_Break
   ' EBNF: break = '<', ('B' | 'b'), ('R' | 'r'), '>';
   ' return match - "True" if match
-  ' return htmlText - break
+  ' return htmlText - HTML text of break
   Stack.PushValue("local", pSave)
   pSave = p
   c = Text.GetSubText(buf, p, 1)
@@ -786,6 +832,9 @@ Sub Parse_Break
   EndIf
   If match Then
     htmlText = LT + "br>"
+    y = y + lineHeight
+    lineHeight = fs * 1.5
+    x = 0
   Else
     p = pSave
   EndIf
@@ -795,7 +844,7 @@ EndSub
 Sub Parse_BulletList
   ' EBNF: bullet list = bullet list item, { bullet list item }, CR, LF;
   ' return match - "True" if match
-  ' return htmlText - bullet list
+  ' return htmlText - HTML text of bullet list
   Stack.PushValue("local", pSave)
   Stack.PushValue("local", htmlText)
   pSave = p
@@ -851,7 +900,7 @@ Sub Parse_BulletListItem
   ' EBNF: bullet list item = { '    ' }, '-', space, text, CR, LF;
   ' return match - "True" if match
   ' return indent - number of indent
-  ' return htmlText - bullet list item
+  ' return htmlText - HTML text of bullet list item
   Stack.PushValue("local", pSave)
   Stack.PushValue("local", indent)
   pSave = p
@@ -873,6 +922,7 @@ Sub Parse_BulletListItem
     Parse_Space()
   EndIf
   If match Then
+    delim = ""
     Parse_Text()
   EndIf
   If match Then
@@ -885,7 +935,31 @@ Sub Parse_BulletListItem
   EndIf
   _indent = Stack.PopValue("local")
   If match Then
-    htmlText = LT + "li>" + htmlText + LT + "/li>" + CR + LF
+    htmlText = LT + "li>" + txt + LT + "/li>" + CR + LF
+    x = indent * 20 + 20
+    If paragraph Then
+      y = y + lineHeight + fsNormal
+      x = 0
+      lineHeight = fsNormal * 1.5
+    EndIf
+    y = y + 7
+    width = 5
+    height = 5
+    _bc = bc
+    _pw = pw
+    If indent = 1 Then
+      bc = "#FFFFFF"
+      pw = 1
+    EndIf
+    Shapes_AddEllipse()
+    bc = _bc
+    pw = _pw
+    y = y - 7
+    x = x + 10
+    Shapes_AddText()
+    lineHeight = Math.Max(lineHeight, fs * 1.5)
+    y = y + lineHeight
+    lineHeight = fsNormal * 1.5
   Else
     p = pSave
     indent = _indent
@@ -922,12 +996,13 @@ Sub Parse_Character
 EndSub
 
 Sub Parse_Column
-  ' EBNF: column = text, '|';
+  ' EBNF: column = rich text, '|';
   ' return match - "True" if match
-  ' return htmlText - column
+  ' return htmlText - HTML text of column
   Stack.PushValue("local", pSave)
   pSave = p
-  Parse_Text()
+  delim = "|"
+  Parse_RichText()
   If match Then
     c = Text.GetSubText(buf, p, 1)
     If c = "|" Then
@@ -976,7 +1051,7 @@ EndSub
 Sub Parse_Heading
   ' EBNF: heading = '#', { '#' }, space, text, CR, LF;
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text of heading
   Stack.PushValue("local", pSave)
   pSave = p
   nH = 0
@@ -1001,6 +1076,7 @@ Sub Parse_Heading
     Parse_Space()
   EndIf
   If match Then
+    delim = ""
     Parse_Text()
   EndIf
   If match Then
@@ -1012,7 +1088,23 @@ Sub Parse_Heading
     EndIf
   EndIf
   If match Then
-    htmlText = LT + "h" + nH + ">" + htmlText + LT + "/h" + nH + ">" + CR + LF
+    htmlText = LT + "h" + nH + ">" + txt + LT + "/h" + nH + ">" + CR + LF
+    If paragraph Then
+      y = y + lineHeight + fsNormal
+      x = 0
+      lineHeight = fsNormal * 1.5
+    EndIf
+    _fb = fb
+    fb = "True"
+    _fs = fs
+    fs = fsH[nH]
+    Shapes_AddText()
+    fb = _fb
+    lineHeight = Math.Max(lineHeight, fs * 1.5)
+    fs = _fs
+    y = y + lineHeight
+    x = 0
+    lineHeight = fsNormal * 1.5
   Else
     p = pSave
   EndIf
@@ -1042,6 +1134,20 @@ Sub Parse_HorizontalRule
   EndIf
   If match Then
     htmlText = LT + "hr>" + CR + LF
+    If paragraph Then
+      y = y + lineHeight + fsNormal
+      x = 0
+      lineHeight = fsNormal * 1.5
+    EndIf
+    height = 2
+    width = gw - 20
+    pw = 0
+    _bc = bc
+    bc = "#666666"
+    Shapes_AddRectangle()
+    bc = _bc
+    y = y + 5
+    x = 0
   Else
     p = pSave
   EndIf
@@ -1049,9 +1155,9 @@ Sub Parse_HorizontalRule
 EndSub
 
 Sub Parse_Image
-  ' EBNF: image = '![', [ plane text ], '](', plane text, ')';
+  ' EBNF: image = '![', [ text ], '](', text, ')';
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text
   Stack.PushValue("local", pSave)
   pSave = p
   c2 = Text.GetSubText(buf, p, 2)
@@ -1062,9 +1168,10 @@ Sub Parse_Image
     match = "False"
   EndIf
   If match Then
-    Parse_PlaneText()
+    delim = "]("
+    Parse_Text()
     If match Then
-      altText = htmlText
+      altText = txt
     Else
       altText = ""
     EndIf
@@ -1080,7 +1187,8 @@ Sub Parse_Image
     EndIf
   EndIf
   If match Then
-    Parse_PlaneText()
+    delim = ")"
+    Parse_Text()
   EndIf
   If match Then
     c = Text.GetSubText(buf, p, 1)
@@ -1091,7 +1199,16 @@ Sub Parse_Image
     EndIf
   EndIf
   If match Then
-    htmlText = LT + "img src='" + htmlText + "' alt='" + altText + "'>"
+    imageName = txt
+    htmlText = LT + "img src='" + txt + "' alt='" + altText + "'>"
+    If paragraph Then
+      y = y + lineHeight + fsNormal
+      x = 0
+      lineHeight = fsNormal * 1.5
+    EndIf
+    Shapes_AddImage()
+    lineHeight = Math.Max(shp["height"] + fsNormal * 0.5, lineHeight)
+    x = x + shp["width"]
   Else
     p = pSave
   EndIf
@@ -1099,9 +1216,9 @@ Sub Parse_Image
 EndSub
 
 Sub Parse_Italic
-  ' EBNF: italic = '_', ( bold | plane text ), '_';
+  ' EBNF: italic = '_', ( bold | text ), '_';
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text
   Stack.PushValue("local", pSave)
   pSave = p
   c = Text.GetSubText(buf, p, 1)
@@ -1114,7 +1231,11 @@ Sub Parse_Italic
   If match Then
     Parse_Bold()
     If Not[match] Then
-      Parse_PlaneText()
+      delim = "_"
+      Parse_Text()
+      If match Then
+        htmlText = txt
+      EndIf
     EndIf
   EndIf
   If match Then
@@ -1127,10 +1248,12 @@ Sub Parse_Italic
   EndIf
   If match Then
     htmlText = LT + "em>" + htmlText + LT + "/em>"
-    fb = "False"
+    _fi = fi
     fi = "True"
+    fs = fsNormal
     Shapes_AddText()
-    y = y + fs * 1.5
+    x = x + width
+    fi = _fi
   Else
     p = pSave
   EndIf
@@ -1138,12 +1261,13 @@ Sub Parse_Italic
 EndSub
 
 Sub Parse_Line
-  ' EBNF: line = text, CR, LF;
+  ' EBNF: line = rich text, CR, LF;
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text
   Stack.PushValue("local", pSave)
   pSave = p
-  Parse_Text()
+  delim = ""
+  Parse_RichText()
   If match Then
     c2 = Text.GetSubText(buf, p, 2)
     If c2 = CR + LF Then
@@ -1161,9 +1285,9 @@ Sub Parse_Line
 EndSub
 
 Sub Parse_Link
-  ' EBNF: link = '[', [ plane text ], '](', plane text, ')';
+  ' EBNF: link = '[', [ text ], '](', text, ')';
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text
   Stack.PushValue("local", pSave)
   Stack.PushValue("local", htmlText)
   pSave = p
@@ -1175,9 +1299,10 @@ Sub Parse_Link
     match = "False"
   EndIf
   If match Then
-    Parse_PlaneText()
+    delim = "]("
+    Parse_Text()
     If match Then
-      caption = htmlText
+      caption = txt
     Else
       caption = ""
     EndIf
@@ -1193,7 +1318,8 @@ Sub Parse_Link
     EndIf
   EndIf
   If match Then
-    Parse_PlaneText()
+    delim = ")"
+    Parse_Text()
   EndIf
   If match Then
     c = Text.GetSubText(buf, p, 1)
@@ -1205,7 +1331,13 @@ Sub Parse_Link
   EndIf
   _htmlText = Stack.PopValue("local")
   If match Then
-    htmlText = LT + "a href='" + htmlText + "'>" + caption + LT + "/a>"
+    htmlText = LT + "a href='" + txt + "'>" + caption + LT + "/a>"
+    txt = caption
+    Stack.PushValue("local", bc)
+    bc = "Blue"
+    Shapes_AddText()
+    bc = Stack.PopValue("local")
+    x = x + width
   Else
     p = pSave
     htmlText = _htmlText
@@ -1230,7 +1362,7 @@ Sub Parse_Number
   ' EBNF: number = digit, { digit };
   ' EBNF: digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text
   c = Text.GetSubText(buf, p, 1)
   match = "False"
   htmlText = ""
@@ -1240,18 +1372,17 @@ Sub Parse_Number
     p = p + 1
     c = Text.GetSubText(buf, p, 1)
   EndWhile
-  If match Then
-  EndIf
 EndSub
 
 Sub Parse_NumberList
   ' EBNF: number list = number list item, { number list item }, CR, LF;
   ' return match - "True" if match
-  ' return htmlText
+  ' return htmlText - HTML text
   Stack.PushValue("local", pSave)
   Stack.PushValue("local", htmlText)
   pSave = p
   lastIndent = -1
+  nN = ""
   Parse_NumberListItem()
   If match Then
     While lastIndent < indent
@@ -1268,6 +1399,8 @@ Sub Parse_NumberList
       Parse_NumberListItem()
       _htmlText = Stack.PopValue("local")
       If match Then
+        If lastIndent = indent Then
+        EndIf
         While lastIndent < indent
           If lastIndent = 0 Then
             type = " type='i'"
@@ -1303,6 +1436,7 @@ Sub Parse_NumberList
       htmlText = htmlText + LT + "/ol>" + CR + LF
       indent = indent - 1
     EndWhile
+    x = 0
   Else
     htmlText = _htmlText
     p = pSave
@@ -1314,7 +1448,7 @@ Sub Parse_NumberListItem
   ' EBNF: number list item = { '    ' }, number, '.', space, text, CR, LF;
   ' return match - "True" if match
   ' return indent - number of indent
-  ' return htmlText
+  ' return htmlText - HTML text
   Stack.PushValue("local", pSave)
   Stack.PushValue("local", indent)
   pSave = p
@@ -1325,6 +1459,9 @@ Sub Parse_NumberListItem
     p = p + 4
     c4 = Text.GetSubText(buf, p, 4)
   EndWhile
+  If lastIndent < indent Then
+    nN[indent] = 0
+  EndIf
   Parse_Number()
   If match Then
     c = Text.GetSubText(buf, p, 1)
@@ -1338,6 +1475,7 @@ Sub Parse_NumberListItem
     Parse_Space()
   EndIf
   If match Then
+    delim = ""
     Parse_Text()
   EndIf
   If match Then
@@ -1350,7 +1488,20 @@ Sub Parse_NumberListItem
   EndIf
   _indent = Stack.PopValue("local")
   If match Then
-    htmlText = LT + "li>" + htmlText + LT + "/li>" + CR + LF
+    htmlText = LT + "li>" + txt + LT + "/li>" + CR + LF
+    x = indent * 20 + 18
+    nN[indent] = nN[indent] + 1
+    If indent = 1 Then
+      num = roman[nN[1]]
+    Else
+      num = nN[indent]
+    EndIf
+    txt = Text.Append(Text.Append(num, ". "), txt)
+    Shapes_AddText()
+    lineHeight = Math.Max(lineHeight, fs * 1.5)
+    y = y + lineHeight
+    x = 0
+    lineHeight = fsNormal * 1.5
   Else
     p = pSave
     indent = _indent
@@ -1358,44 +1509,37 @@ Sub Parse_NumberListItem
   pSave = Stack.PopValue("local")
 EndSub
 
-Sub Parse_PlaneText
-  ' EBNF: plane text = character - ( '|' | CR | LF ), { character - ( '&' | '<' | '*' | '_' | '[' | ']' | ')' | '!' | '|' | ' ' | TAB | CR | LF ) };
+Sub Parse_RichText
+  ' EBNF: rich text = span, { span - delimiter};
+  ' param delim - delimiter
   ' return match - "True" if match
-  ' return htmlText - plane text
-  htmlText = ""
-  c = Text.GetSubText(buf, p, 1)
-  If Text.IsSubText("|" + CR + LF, c) Then
-    match = "False"
-  Else
-    match = "True"
-  EndIf
+  ' return htmlText - HTML text of rich text
+  Parse_Span()
   If match Then
-    Parse_Character()
-  EndIf
-  If match Then
-    If c = "&" Then
-      htmlText = "&amp;"
-    ElseIf c = "<" Then
-      htmlText = "&lt;"
-    Else
-      htmlText = c
-    EndIf
     While match
-      c = Text.GetSubText(buf, p, 1)
-      If Text.IsSubText("&*_[])!| " + TAB + LT + CR + LF, c) Then
-        match = "False"
+      If delim <> "" Then
+        len = Text.GetLength(delim)
+        cn = Text.GetSubText(buf, p, len)
+        If cn = delim Then
+          match = "False"
+        EndIf
       EndIf
       If match Then
-        Parse_Character()
-      EndIf
-      If match Then
-        htmlText = Text.Append(htmlText, c)
+        Stack.PushValue("local", htmlText)
+        Stack.PushValue("local", txt)
+        Parse_Span()
+        _txt = Stack.PopValue("local")
+        _htmlText = Stack.PopValue("local")
+        If match Then
+          htmlText = Text.Append(_htmlText, htmlText)
+          txt = Text.Append(_txt, txt)
+        Else
+          htmlText = _htmlText
+          txt = _txt
+        EndIf
       EndIf
     EndWhile
     match = "True"
-  EndIf
-  If match Then
-    txt = htmlText
   EndIf
 EndSub
 
@@ -1531,7 +1675,7 @@ Sub Parse_Space
 EndSub
 
 Sub Parse_Span
-  ' EBNF: span = bold | italic | image | link | break | plane text;
+  ' EBNF: span = bold | italic | image | link | break | token;
   ' return match - "True" if match
   ' return htmlText
   Parse_Bold()
@@ -1548,7 +1692,18 @@ Sub Parse_Span
     Parse_Break()
   EndIf
   If Not[match] Then
-    Parse_PlaneText()
+    Parse_Token()
+    If match Then
+      htmlText = txt
+      If Not[paragraph] Then
+        y = y + lineHeight + fsNormal
+        x = 0
+        lineHeight = fsNormal * 1.5
+        paragraph = "True"
+      EndIf
+      Shapes_AddText()
+      x = x + width 
+    EndIf
   EndIf
 EndSub
 
@@ -1587,6 +1742,13 @@ Sub Parse_Table
   EndIf
   If match Then
     htmlText = LT + "table border='1'>" + CR + LF + htmlText + LT + "/table>" + CR + LF
+    If paragraph Then
+      y = y + lineHeight + fsNormal
+      x = 0
+      lineHeight = fsNormal * 1.5
+    EndIf
+    y = y + lineHeight + fsNormal
+    x = 0
   Else
     p = pSave
   EndIf
@@ -1594,22 +1756,73 @@ Sub Parse_Table
 EndSub
 
 Sub Parse_Text
-  ' EBNF: text = span, { span };
+  ' EBNF: text = token, { token - delimiter };
+  ' param delim - delimiter
   ' return match - "True" if match
-  ' return htmlText
-  Parse_Span()
+  ' return txt - text
+  Parse_Token()
   If match Then
     While match
-      Stack.PushValue("local", htmlText)
-      Parse_Span()
-      _htmlText = Stack.PopValue("local")
+      If delim <> "" Then
+        len = Text.GetLength(delim)
+        cn = Text.GetSubText(buf, p, len)
+        If cn = delim Then
+          match = "False"
+        EndIf
+      EndIf
       If match Then
-        htmlText = Text.Append(_htmlText, htmlText)
-      Else
-        htmlText = _htmlText
+        Stack.PushValue("local", txt)
+        Parse_Token()
+        _txt = Stack.PopValue("local")
+        If match Then
+          txt = Text.Append(_txt, txt)
+        Else
+          txt = _txt
+        EndIf
       EndIf
     EndWhile
     match = "True"
+  EndIf
+EndSub
+
+Sub Parse_Token
+  ' EBNF: token = character - ( '|' | CR | LF ), { character - ( '&' | '<' | '*' | '_' | '[' | ']' | ')' | '!' | '|' | ' ' | TAB | CR | LF ) };
+  ' return match - "True" if match
+  ' return txt - token
+  txt = ""
+  c = Text.GetSubText(buf, p, 1)
+  If Text.IsSubText("|" + CR + LF, c) Then
+    match = "False"
+  Else
+    match = "True"
+  EndIf
+  If match Then
+    Parse_Character()
+  EndIf
+  If match Then
+    If c = "&" Then
+      txt = "&amp;"
+    ElseIf c = "<" Then
+      txt = "&lt;"
+    Else
+      txt = c
+    EndIf
+    While match
+      c = Text.GetSubText(buf, p, 1)
+      If Text.IsSubText("&*_[])!| " + TAB + LT + CR + LF, c) Then
+        match = "False"
+      EndIf
+      If match Then
+        Parse_Character()
+      EndIf
+      If match Then
+        txt = Text.Append(txt, c)
+      EndIf
+    EndWhile
+    match = "True"
+  EndIf
+  If Not[match] Then
+    txt = ""
   EndIf
 EndSub
 
@@ -1618,6 +1831,7 @@ Sub Parse_WikiText
   ' param wikiText
   ' return match - "True" if match
   ' return htmlText
+  fs = fsNormal
   buf = wikiText
   p = 1
   Parse_Block()
@@ -1635,6 +1849,8 @@ Sub Parse_WikiText
       EndIf
       If lastParagraph And Not[paragraph] Then
         _htmlText = _htmlText + LT + "/p>" + CR + LF
+        lineHeight = fsNormal * 1.5
+        x = 0
       EndIf
       htmlText = Text.Append(_htmlText, htmlText)
     Else
@@ -1645,6 +1861,7 @@ Sub Parse_WikiText
   If paragraph Then
     htmlText = htmlText + LT + "/p>" + CR + LF
   EndIf
+  htmlText = LT + "html>" + CR + LF + LT + "body>" + CR + LF + htmlText + LT + "/body>" + CR + LF + LT + "/html>" + CR + LF
 EndSub
 
 Sub SB_RotateWorkaround
@@ -1676,6 +1893,63 @@ Sub SB_Workaround
   Else
     silverlight = "False"
   EndIf
+EndSub
+
+Sub Shapes_AddEllipse
+  ' param x, y - top left position
+  ' param width
+  ' param height
+  Shapes_EntryClear()
+  Shapes_PenToEntry()
+  Shapes_BrushToEntry()
+  func = "ell"
+  Shapes_FuncToEntry()
+  Shapes_MoveToEntry()
+  Shapes_RotateToEntry()
+  Shapes_EntryToArray()
+EndSub
+
+Sub Shapes_AddImage
+  ' param x, y - top left position
+  ' param imageName - image url
+  Shapes_EntryClear()
+  func = "img"
+  Shapes_FuncToEntry()
+  Shapes_MoveToEntry()
+  Shapes_RotateToEntry()
+  Shapes_EntryToArray()
+EndSub
+
+Sub Shapes_AddRectangle
+  ' param x, y - top left position
+  ' param width
+  ' param height
+  Shapes_EntryClear()
+  Shapes_PenToEntry()
+  Shapes_BrushToEntry()
+  func = "rect"
+  Shapes_FuncToEntry()
+  Shapes_MoveToEntry()
+  Shapes_RotateToEntry()
+  Shapes_EntryToArray()
+EndSub
+
+Sub Shapes_AddText
+  ' param x, y - top left position
+  ' param txt - text
+  Shapes_EntryClear()
+  Shapes_PenToEntry()
+  Shapes_BrushToEntry()
+  Shapes_FontToEntry()
+  func = "text"
+  Shapes_FuncToEntry()
+  Shapes_MoveToEntry()
+  Shapes_RotateToEntry()
+  Shapes_EntryToArray()
+EndSub
+
+Sub Shapes_BrushToEntry
+  shp["bc"] = bc
 EndSub
 
 Sub Shapes_CalcWidthAndHeight
@@ -1733,23 +2007,20 @@ Sub Shapes_CalcWidthAndHeight
   EndFor
 EndSub
 
-Sub Shapes_AddText
-  ' param x, y - top left position
-  ' param txt - text
-  Shapes_EntryClear()
-  Shapes_PenToEntry()
-  Shapes_BrushToEntry()
-  Shapes_FontToEntry()
-  func = "text"
-  Shapes_FuncToEntry()
-  Shapes_MoveToEntry()
-  Shapes_RotateToEntry()
-  Shapes_EntryToArray()
-EndSub
-
-Sub Shapes_BrushToEntry
-  GraphicsWindow.BrushColor = bc
-  shp["bc"] = bc
+Sub Shapes_DumpArray
+  Stack.PushValue("local", buf)
+  buf = ""
+  If 0 < shX Then
+    buf = buf + "  shX = " + shX + LF
+  EndIf
+  If 0 < shY Then
+    buf = buf + "  shY = " + shY + LF
+  EndIf
+  For i = iMin To iMax
+    buf = buf + "  shape[" + i + "] = " + WQ + shape[i] + WQ + LF
+  EndFor
+  TextWindow.WriteLine(buf)
+  buf = Stack.PopValue("local")
 EndSub
 
 Sub Shapes_EntryClear
@@ -1762,28 +2033,21 @@ Sub Shapes_EntryToArray
 EndSub
 
 Sub Shapes_FontToEntry
-  GraphicsWindow.FontSize = fs
   shp["fs"] = fs
-  GraphicsWindow.FontName = fn
   shp["fn"] = fn
-  GraphicsWindow.FontBold = fb
   shp["fb"] = fb
-  GraphicsWindow.FontItalic = fi
   shp["fi"] = fi
 EndSub
 
 Sub Shapes_FuncToEntry
   shp["func"] = func
   If func = "ell" Then
-    obj = Shapes.AddEllipse(width, height)
     shp["width"] = Math.Floor(width * 100) / 100
     shp["height"] = Math.Floor(height * 100) / 100
   ElseIf func = "rect" Then
-    obj = Shapes.AddRectangle(width, height)
     shp["width"] = Math.Floor(width * 100) / 100
     shp["height"] = Math.Floor(height * 100) / 100
   ElseIf func = "tri" Then
-    obj = Shapes.AddTriangle(x1, y1, x2, y2, x3, y3)
     shp["x1"] = Math.Floor(x1 * 100) / 100
     shp["y1"] = Math.Floor(y1 * 100) / 100
     shp["x2"] = Math.Floor(x2 * 100) / 100
@@ -1791,14 +2055,26 @@ Sub Shapes_FuncToEntry
     shp["x3"] = Math.Floor(x3 * 100) / 100
     shp["y3"] = Math.Floor(y3 * 100) / 100
   ElseIf func = "line" Then
-    obj = Shapes.AddLine(x1, y1, x2, y2)
     shp["x1"] = Math.Floor(x1 * 100) / 100
     shp["y1"] = Math.Floor(y1 * 100) / 100
     shp["x2"] = Math.Floor(x2 * 100) / 100
     shp["y2"] = Math.Floor(y2 * 100) / 100
   ElseIf func = "text" Then
-    obj = Shapes.AddText(txt)
     shp["text"] = txt
+    Font_GetTextWidth()
+    shp["width"] = width
+    shp["height"] = fs
+  ElseIf func = "img" Then
+    shp["src"] = imageName
+    If Text.IsSubText(imageName, ":") Then
+      fileNameOrUrl = imageName
+    Else
+      fileNameOrUrl = Program.Directory + "/" + imageName
+    EndIf
+    img = ImageList.LoadImage(fileNameOrUrl)
+    shp["img"] = img
+    shp["width"] = ImageList.GetWidthOfImage(img)
+    shp["height"] = ImageList.GetHeightOfImage(img)
   EndIf
 EndSub
 
@@ -1836,24 +2112,31 @@ Sub Shapes_Init
 EndSub
 
 Sub Shapes_MoveToEntry
-  Shapes.Move(obj, shX + x, shY + y)
   shp["x"] = Math.Floor(x * 100) / 100
   shp["y"] = Math.Floor(y * 100) / 100
 EndSub
 
 Sub Shapes_PenToEntry
-  GraphicsWindow.PenWidth = pw
   shp["pw"] = pw
   If 0 < pw Then 
-    GraphicsWindow.PenColor = pc
     shp["pc"] = pc
   EndIf
 EndSub
 
+Sub Shapes_Restore
+  shape = _shape
+  shX = _shX
+  shY = _shY
+EndSub
+
 Sub Shapes_RotateToEntry
   If angle <> 0 Then
-    Shapes.Rotate(obj, angle)
     shp["angle"] = Math.Floor(angle * 100) / 100
   EndIf
 EndSub
-    
+
+Sub Shapes_Save
+  _shape = shape
+  _shX = shX
+  _shY = shY
+EndSub

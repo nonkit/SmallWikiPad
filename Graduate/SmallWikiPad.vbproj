@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{50F4DA4D-B282-4AAF-A414-1E8C5756BA2D}</ProjectGuid>
+    <ProjectGuid>$$(PROJECT_GUID)</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <StartupObject>SmallWikiPad.SmallWikiPadModule</StartupObject>
     <AssemblyName>SmallWikiPad</AssemblyName>

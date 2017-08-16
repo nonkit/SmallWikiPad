@@ -1,19 +1,17 @@
 Module SmallWikiPadModule
-    Dim tbox, wikiText, dx, mx, mouseDown, posX, tabClicked, i, lastTabClicked, iLast, hline, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, item, CR, LF, LT, TAB, WQ, __Not, fsNormal, fn, fsH, fb, fi, bc, pc, pw, param, styled, x3, txt, paragraph, dy, my, mouseMove, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, iMax, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, yc, y0, fs, x0, px0, px, str, width, color, left, right, shWidth, s, silverlight, alpha, j, _x, _y, r, a, pSave, p, c2, buf, match, c, lastIndent, indent, _htmlText, c4, _indent, nH, c3, altText, caption, type, lastParagraph, ox, oy, msWait, xmin, xmax, ymin, ymax, func, obj As Primitive
+    Dim tbox, wikiText, dx, mx, mouseDown, posX, tabClicked, i, lastTabClicked, iLast, hline, shadow, iDocument, x, grp, y, ymaxPic, iScrollbar, iThumb, htmlText, scale, angle, name, nGroup, ph, shHeight, shY, yminPic, gh, shX, gw, height, iTabs, _i, shp, shape, menu, item, CR, LF, LT, TAB, WQ, __Not, fsNormal, fn, fsH, roman, fb, fi, bc, pc, pw, param, x3, txt, paragraph, lineHeight, dy, my, mouseMove, lastWikiText, iMax, n, bh, th, yminThumb, ymaxThumb, hPage, group, yMove, iMin, x1, x2, y1, y2, y3, y4, y5, y6, yLast, myLast, myThumb, yc, fs, y0, x0, px0, px, str, width, _y, _x, color, left, right, s, shWidth, silverlight, alpha, j, r, a, pSave, p, c2, buf, match, delim, _fb, c, lastIndent, indent, _htmlText, c4, _indent, _bc, _pw, nH, _fs, c3, altText, imageName, _fi, caption, nN, type, num, len, cn, _txt, lastParagraph, ox, oy, msWait, func, xmin, xmax, ymin, ymax, fileNameOrUrl, img, _shape, _shX, _shY As Primitive
     Sub Main()
         ' Small Wiki Pad
-        ' Version 0.5.0b
+        ' Version 0.5.1b
         ' Copyright © 2015-2017 Nonki Takahashi.  The MIT License.
-        ' Last update 2017-08-12
-        ' Program ID NVD371-6
+        ' Last update 2017-08-15
+        ' Program ID NVD371-7
 
-        GraphicsWindow.Title = "Small Wiki Pad 0.5.0b"
+        GraphicsWindow.Title = "Small Wiki Pad 0.5.1b"
         Init()
         Form()
         LoadWikiText()
         Controls.SetTextBoxText(tbox, wikiText)
-        Parse_WikiText()
-        'LoadHTMLText()
         AddHandler GraphicsWindow.MouseDown, AddressOf OnMouseDown
         AddHandler GraphicsWindow.MouseMove, AddressOf OnMouseMove
         While true
@@ -93,12 +91,24 @@ Module SmallWikiPadModule
 
 
 
+
+
+
+
+
+
+
     End Sub
     Sub ChangeTab()
         i = lastTabClicked
         If i <> iLast Then
             Shapes.ShowShape(hline(iLast))
+            Shapes.SetOpacity(shadow(iLast), 20)
             Shapes.HideShape(hline(i))
+            Shapes.SetOpacity(shadow(i), 0)
+            If iLast = 1 Then
+                Update()
+            End If
             If (i = 1) Or (i = 2) Then
                 If iLast = 3 Then
                     Stack.PushValue("local", i)
@@ -127,7 +137,7 @@ Module SmallWikiPadModule
                 Controls.HideControl(tbox)
                 ' initialize shapes
                 If iDocument = CType("", Primitive) Then
-                    Shapes_Init()
+                    Shapes_Restore()
                     scale = 1
                     angle = 0
                     ' add shapes
@@ -160,13 +170,20 @@ Module SmallWikiPadModule
                 i = iTabs
                 Group_Remove()
                 Group_Add()
-                For _i = 1 To 3
-                    shp = shape(_i * 3)
-                    menu(_i) = shp("obj")
-                    shp = shape((_i * 3) + 2)
-                    hline(_i) = shp("obj")
-                Next
                 i = Stack.PopValue("local")
+                For _i = 1 To 3
+                    shp = shape((_i * 4) - 1)
+                    menu(_i) = shp("obj")
+                    shp = shape((_i * 4) + 1)
+                    hline(_i) = shp("obj")
+                    shp = shape((_i * 4) + 2)
+                    shadow(_i) = shp("obj")
+                    If _i = i Then
+                        Shapes.SetOpacity(shadow(_i), 0)
+                    Else
+                        Shapes.SetOpacity(shadow(_i), 20)
+                    End If
+                Next
                 Shapes.HideShape(hline(i))
             End If
             iLast = i
@@ -184,13 +201,14 @@ Module SmallWikiPadModule
         GraphicsWindow.FontBold = false
         GraphicsWindow.PenWidth = 1
         GraphicsWindow.PenColor = "#666666"
-        posX = "1=5;2=105;3=205;4=305;"
+        posX = "1=0;2=100;3=200;4=300;"
         item = "1=Wiki;2=HTML;3=Preview;"
         scale = 1
         Controls_AddTabs()
         iTabs = nGroup
-        tbox = Controls.AddMultiLineTextBox(posX(1), 35)
-        Controls.SetSize(tbox, gw - 10, gh - 40)
+        GraphicsWindow.BrushColor = "#000"
+        tbox = Controls.AddMultiLineTextBox(posX(1), 31)
+        Controls.SetSize(tbox, gw, gh - 31)
     End Sub
     Sub Init()
         CR = Text.GetCharacter(13)
@@ -203,17 +221,20 @@ Module SmallWikiPadModule
         fsNormal = 16
         fn = "Verdana"
         fsH = "1=32;2=24;3=20;4=16;"
+        roman = "1=i;2=ii;3=iii;4=iv;5=v;6=vi;7=vii;8=viii;9=ix;10=x;11=xi;12=xii;"
         fb = false
         fi = false
         bc = "#000000" ' font color (brush color)
         pc = "#000000"
         pw = 0
         param = ""
-        styled = ""
+        shX = 10
+        shY = 10
         x3 = 0
         txt = ""
         pw = 0
-        paragraph = false
+        paragraph = true
+        lineHeight = fsNormal * 1.5
     End Sub
     Sub LoadWikiText()
         wikiText = "**bold**" + LT + "br>" + CR + LF
@@ -228,7 +249,7 @@ Module SmallWikiPadModule
         wikiText = wikiText + "1. Number List" + CR + LF
         wikiText = wikiText + "    1. Number List 2" + CR + LF
         wikiText = wikiText + CR + LF
-        wikiText = wikiText + "![Turtle](Turtle.png)" + CR + LF
+        wikiText = wikiText + "![Turtle](http://www.nonkit.com/smallbasic.files/Turtle.png)" + CR + LF
         wikiText = wikiText + CR + LF
         wikiText = wikiText + "[SmallWikiPad](http://github.com/nonkit/SmallWikiPad)" + CR + LF
         wikiText = wikiText + CR + LF
@@ -236,39 +257,7 @@ Module SmallWikiPadModule
         wikiText = wikiText + "| --- | --- |" + CR + LF
         wikiText = wikiText + "| Row 1 - Cell 1 | Row 1 - Cell 2 |" + CR + LF
         wikiText = wikiText + "| Row 2 - Cell 1 | Row 2 - Cell 2 |" + CR + LF
-        wikiText = wikiText + "___"
-    End Sub
-    Sub LoadHTMLText()
-        htmlText = LT + "html>" + CR + LF
-        htmlText = htmlText + LT + "body>" + CR + LF
-        htmlText = htmlText + LT + "p>" + CR + LF
-        htmlText = htmlText + LT + "strong>bold" + LT + "/strong>" + LT + "br>" + CR + LF
-        htmlText = htmlText + LT + "em>italics" + LT + "/em>" + LT + "br>" + CR + LF
-        htmlText = htmlText + LT + "/p>" + CR + LF
-        htmlText = htmlText + LT + "h1>Heading 1" + LT + "/h1>" + CR + LF
-        htmlText = htmlText + LT + "h2>Heading 2" + LT + "/h2>" + CR + LF
-        htmlText = htmlText + LT + "h3>Heading 3" + LT + "/h3>" + CR + LF
-        htmlText = htmlText + LT + "ul>" + CR + LF
-        htmlText = htmlText + LT + "li>Bullet List" + LT + "/li>" + LT + "br>" + CR + LF
-        htmlText = htmlText + LT + "ul>" + CR + LF
-        htmlText = htmlText + LT + "li>Bullet List 2" + LT + "/li>" + CR + LF
-        htmlText = htmlText + LT + "/ul>" + CR + LF
-        htmlText = htmlText + LT + "/ul>" + CR + LF
-        htmlText = htmlText + LT + "ol>" + CR + LF
-        htmlText = htmlText + LT + "li>Number List" + LT + "/li>" + LT + "br>" + CR + LF
-        htmlText = htmlText + LT + "ol typr=i>" + CR + LF
-        htmlText = htmlText + LT + "li>Number List 2" + LT + "/li>" + CR + LF
-        htmlText = htmlText + LT + "/ol>" + CR + LF
-        htmlText = htmlText + LT + "/ol>" + CR + LF
-        htmlText = htmlText + LT + "p>" + LT + "img src='http://www.nonkit.com/smallbasic.files/Turtle.png'>" + LT + "/p>" + CR + LF
-        htmlText = htmlText + LT + "table border=1>" + CR + LF
-        htmlText = htmlText + LT + "tr>" + LT + "th>Table Heading 1" + LT + "/th>" + LT + "th>Table Heading 2" + LT + "/th>" + LT + "/tr>" + CR + LF
-        htmlText = htmlText + LT + "tr>" + LT + "td>Row 1-Cell 1" + LT + "/td>" + LT + "td>Row 1-Cell 2" + LT + "/td>" + LT + "/tr>" + CR + LF
-        htmlText = htmlText + LT + "tr>" + LT + "td>Row 2-Cell 1" + LT + "/td>" + LT + "td>Row 2-Cell 2" + LT + "/td>" + LT + "/tr>" + CR + LF
-        htmlText = htmlText + LT + "/table>" + CR + LF
-        htmlText = htmlText + LT + "hr>" + CR + LF
-        htmlText = htmlText + LT + "/body>" + CR + LF
-        htmlText = htmlText + LT + "/html>"
+        wikiText = wikiText + "___" + CR + LF
     End Sub
     Sub OnMouseDown()
         dx = GraphicsWindow.MouseX
@@ -280,29 +269,56 @@ Module SmallWikiPadModule
         my = GraphicsWindow.MouseY
         mouseMove = true
     End Sub
+    Sub Update()
+        wikiText = Controls.GetTextBoxText(tbox)
+        If wikiText <> lastWikiText Then
+            name = "document"
+            Group_Remove()
+            shape = ""
+            iMax = 0
+            x = 0
+            y = 0
+            lineHeight = fsNormal * 1.5
+            Parse_WikiText()
+            shX = 10
+            shY = 10
+            Shapes_Save()
+            lastWikiText = wikiText
+            iDocument = ""
+        End If
+    End Sub
     Sub Controls_AddTabs()
         ' param item[] - tab items
         shX = 0 ' x offset
         shY = 0 ' y offset
         shape = ""
-        shape(1) = "func=rect;x=0;y=0;width=" + gw + ";height=32;pw=0;bc=#FFFFFF;"
-        shape(2) = "func=line;x=" + posX(1) + ";y=5;x1=0;y1=0;x2=" + (posX(4) - posX(1)) + ";y2=0;pw=1;pc=#666666;"
+        shape(1) = "func=rect;x=0;y=0;width=" + gw + ";height=32;pw=0;bc=#FFF;"
+        shape(2) = "func=line;x=" + posX(1) + ";y=1;x1=0;y1=0;x2=" + (posX(4) - posX(1)) + ";y2=0;pw=1;pc=#666;"
         n = Microsoft.SmallBasic.Library.Array.GetItemCount(item)
         For i = 1 To n
-            shape(i * 3) = "func=text;x=" + (posX(i) + 5) + ";y=10;text=" + item(i) + ";fn=Segoe UI;fs=12;"
-            shape((i * 3) + 1) = "func=line;x=" + posX(i) + ";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
-            shape((i * 3) + 2) = "func=line;x=" + posX(i) + ";y=30;x1=0;y1=0;x2=" + (posX(i + 1) - posX(i)) + ";y2=0;pw=1;pc=#666666;"
+            shape((i * 4) - 1) = "func=text;x=" + (posX(i) + 5) + ";y=10;text=" + item(i) + ";fn=Segoe UI;fs=12;"
+            shape(i * 4) = "func=line;x=" + posX(i) + ";y=0;x1=0;y1=0;x2=0;y2=31;pw=1;pc=#666;"
+            shape((i * 4) + 1) = "func=line;x=" + posX(i) + ";y=31;x1=0;y1=0;x2=" + (posX(i + 1) - posX(i)) + ";y2=0;pw=1;pc=#666;"
+            shape((i * 4) + 2) = "func=rect;x=" + posX(i) + ";y=0;width=" + (posX(i + 1) - posX(i)) + ";height=32;pw=0;bc=#000;"
         Next
         iLast = 1
-        shape((n * 3) + 3) = "func=line;x=" + posX(4) + ";y=5;x1=0;y1=0;x2=0;y2=25;pw=1;pc=#666666;"
-        shape((n * 3) + 4) = "func=line;x=" + posX(4) + ";y=30;x1=0;y1=0;x2=" + (gw - 5 - posX(4)) + ";y2=0;pw=1;pc=#666666;"
+        shape((n * 4) + 3) = "func=line;x=" + posX(4) + ";y=0;x1=0;y1=0;x2=0;y2=31;pw=1;pc=#666;"
+        shape((n * 4) + 4) = "func=rect;x=" + (posX(4) + 1) + ";y=0;width=" + (gw - posX(4) - 1) + ";height=32;pw=0;bc=#BBB;"
+        shape((n * 4) + 5) = "func=line;x=" + posX(4) + ";y=31;x1=0;y1=0;x2=" + (gw - posX(4)) + ";y2=0;pw=1;pc=#666;"
         name = "tabs"
         Group_Add()
         For i = 1 To n
-            shp = shape(i * 3)
+            shp = shape((i * 4) - 1)
             menu(i) = shp("obj")
-            shp = shape((i * 3) + 2)
+            shp = shape((i * 4) + 1)
             hline(i) = shp("obj")
+            shp = shape((i * 4) + 2)
+            shadow(i) = shp("obj")
+            If i = iLast Then
+                Shapes.SetOpacity(shadow(i), 0)
+            Else
+                Shapes.SetOpacity(shadow(i), 20)
+            End If
         Next
         Shapes.HideShape(hline(iLast))
     End Sub
@@ -459,19 +475,19 @@ Module SmallWikiPadModule
         End If
     End Sub
     Sub Font_GetTextWidth()
-        ' param["fs"] - font size
-        ' param["fn"] - font name
-        ' param["fb"] - font bold
-        ' param["fi"] - font italic
-        ' param["text"] - text to get width in px
+        ' param fs - font size
+        ' param fn - font name
+        ' param fb - font bold
+        ' param fi - font italic
+        ' param txt - text to get width in px
         ' return width - text width
         yc = 4
         GraphicsWindow.BrushColor = "#FFFFFF"
         GraphicsWindow.FillRectangle(0, yc, gw, gh - yc)
-        GraphicsWindow.FontSize = param("fs")
-        GraphicsWindow.FontName = param("fn")
-        GraphicsWindow.FontBold = param("fb")
-        GraphicsWindow.FontItalic = param("fi")
+        GraphicsWindow.FontSize = fs
+        GraphicsWindow.FontName = fn
+        GraphicsWindow.FontBold = fb
+        GraphicsWindow.FontItalic = fi
         GraphicsWindow.BrushColor = "#FEFEFE"
         GraphicsWindow.DrawText(0, yc, "||")
         y0 = yc
@@ -487,7 +503,7 @@ Module SmallWikiPadModule
         GraphicsWindow.FillRectangle(0, yc, gw, gh - yc)
         GraphicsWindow.BrushColor = "Gray"
         GraphicsWindow.FillRectangle(0, yc + fs, gw, 1)
-        str = "|" + param("text") + "|"
+        str = "|" + txt + "|"
         GraphicsWindow.BrushColor = "#FEFEFE"
         GraphicsWindow.DrawText(0, yc, str)
         x1 = fs * Text.GetLength(str)
@@ -499,26 +515,26 @@ Module SmallWikiPadModule
     End Sub
     Sub Font_Measure()
         ' return px - width in pixel (px)
-        y = Microsoft.SmallBasic.Library.Math.Floor((y0 + y1) / 2)
-        For x = x0 To x1
-            color = GraphicsWindow.GetPixel(x, y)
+        _y = Microsoft.SmallBasic.Library.Math.Floor((y0 + y1) / 2)
+        For _x = x0 To x1
+            color = GraphicsWindow.GetPixel(_x, _y)
             If __Not(Text.EndsWith(color, "FFFFFF")) Then
-                left = x
-                x = x1 ' break
+                left = _x
+                _x = x1 ' exit For
             End If
         Next
-        For x = x1 To x0 Step -1
-            color = GraphicsWindow.GetPixel(x, y)
+        For _x = x1 To x0 Step -1
+            color = GraphicsWindow.GetPixel(_x, _y)
             If __Not(Text.EndsWith(color, "FFFFFF")) Then
-                right = x
-                x = x0 ' break
+                right = _x
+                _x = x0 ' exit For
             End If
         Next
-        For x = right To x0 Step -1
-            color = GraphicsWindow.GetPixel(x, y)
+        For _x = right To x0 Step -1
+            color = GraphicsWindow.GetPixel(_x, _y)
             If Text.EndsWith(color, "FFFFFF") Then
-                right = x + 1
-                x = x0 ' break
+                right = _x + 1
+                _x = x0 ' exit For
             End If
         Next
         px = right - left
@@ -534,6 +550,7 @@ Module SmallWikiPadModule
         Stack.PushValue("local", i)
         Stack.PushValue("local", x)
         Stack.PushValue("local", y)
+        Stack.PushValue("local", s)
         nGroup = nGroup + 1
         grp = ""
         grp("name") = name
@@ -576,7 +593,7 @@ Module SmallWikiPadModule
                 GraphicsWindow.FontItalic = shp("fi")
                 shp("obj") = Shapes.AddText(shp("text"))
             ElseIf shp("func") = CType("img", Primitive) Then
-                shp("obj") = Shapes.AddImage(shp("src"))
+                shp("obj") = Shapes.AddImage(shp("img"))
                 Shapes.Move(shp("obj"), shp("x"), shp("y"))
             End If
             x = shp("x")
@@ -597,6 +614,7 @@ Module SmallWikiPadModule
         Next
         grp("shape") = shape
         group(nGroup) = grp
+        s = Stack.PopValue("local")
         y = Stack.PopValue("local")
         x = Stack.PopValue("local")
         i = Stack.PopValue("local")
@@ -604,6 +622,7 @@ Module SmallWikiPadModule
     Sub Group_Dump()
         ' Gourp | Dump a group for debug
         ' param group[i] - group to dump
+        Stack.PushValue("local", j)
         grp = group(i)
         TextWindow.WriteLine("name=" + grp("name"))
         TextWindow.WriteLine("x=" + grp("x"))
@@ -615,6 +634,7 @@ Module SmallWikiPadModule
         For j = 1 To Microsoft.SmallBasic.Library.Array.GetItemCount(shape)
             TextWindow.WriteLine("shape[" + j + "]=" + WQ + shape(j) + WQ)
         Next
+        j = Stack.PopValue("local")
     End Sub
     Sub Group_Hide()
         ' Group | Hide a group
@@ -634,6 +654,9 @@ Module SmallWikiPadModule
         ' param group[i] - the group to move
         ' param x, y - the position to move
         ' return group[i] - the updated group
+        Stack.PushValue("local", s)
+        Stack.PushValue("local", n)
+        Stack.PushValue("local", j)
         grp = group(i)
         s = grp("scale")
         grp("x") = x
@@ -652,6 +675,9 @@ Module SmallWikiPadModule
             Shapes.Move(shp("obj"), grp("x") + (_x * s), grp("y") + (_y * s))
         Next
         group(i) = grp
+        j = Stack.PopValue("local")
+        n = Stack.PopValue("local")
+        s = Stack.PopValue("local")
     End Sub
     Sub Group_Remove()
         ' Group | Remove a group
@@ -704,7 +730,7 @@ Module SmallWikiPadModule
         End If
     End Sub
     Sub Parse_BlankLine()
-        ' EBNF: blank line = [space], CR, LF;
+        ' EBNF: blank line = [ space ], CR, LF;
         ' return match - "True" if match
         ' return htmlText - null
         Stack.PushValue("local", pSave)
@@ -721,10 +747,30 @@ Module SmallWikiPadModule
         End If
         pSave = Stack.PopValue("local")
     End Sub
-    Sub Parse_Block()
-        ' EBNF: block = heading | bullet list | number list | table | horizontal rule | blank line | line;
+    Sub Parse_BlankLines()
+        ' EBNF: blank lines = blank line, { blank line };
         ' return match - "True" if match
-        ' return htmlText - block
+        ' return htmlText - null
+        Parse_BlankLine()
+        If match Then
+            While match
+                Parse_BlankLine()
+            End While
+            match = true
+        End If
+        If match Then
+            If paragraph Then
+                y = y + lineHeight + fsNormal
+                x = 0
+                lineHeight = fsNormal * 1.5
+            End If
+            y = y + fsNormal
+        End If
+    End Sub
+    Sub Parse_Block()
+        ' EBNF: block = heading | bullet list | number list | table | horizontal rule | blank lines | line;
+        ' return match - "True" if match
+        ' return htmlText - HTML text of block
         ' return paragraph - "True" if match with line
         Parse_Heading()
         If __Not(match) Then
@@ -740,7 +786,7 @@ Module SmallWikiPadModule
             Parse_HorizontalRule()
         End If
         If __Not(match) Then
-            Parse_BlankLine()
+            Parse_BlankLines()
         End If
         If match Then
             paragraph = false
@@ -752,7 +798,7 @@ Module SmallWikiPadModule
         End If
     End Sub
     Sub Parse_Bold()
-        ' EBNF: bold = '**', ( italic | plane text ), '**';
+        ' EBNF: bold = '**', ( italic | text ), '**';
         ' return match - "True" if match
         ' return htmlText - bold
         Stack.PushValue("local", pSave)
@@ -767,7 +813,11 @@ Module SmallWikiPadModule
         If match Then
             Parse_Italic()
             If __Not(match) Then
-                Parse_PlaneText()
+                delim = "**"
+                Parse_Text()
+                If match Then
+                    htmlText = txt
+                End If
             End If
         End If
         If match Then
@@ -780,10 +830,12 @@ Module SmallWikiPadModule
         End If
         If match Then
             htmlText = LT + "strong>" + htmlText + LT + "/strong>"
+            _fb = fb
             fb = true
-            fi = false
+            fs = fsNormal
             Shapes_AddText()
-            y = y + (fs * 1.5)
+            x = x + width
+            fb = _fb
         Else
             p = pSave
         End If
@@ -792,7 +844,7 @@ Module SmallWikiPadModule
     Sub Parse_Break()
         ' EBNF: break = '<', ('B' | 'b'), ('R' | 'r'), '>';
         ' return match - "True" if match
-        ' return htmlText - break
+        ' return htmlText - HTML text of break
         Stack.PushValue("local", pSave)
         pSave = p
         c = Text.GetSubText(buf, p, 1)
@@ -828,6 +880,9 @@ Module SmallWikiPadModule
         End If
         If match Then
             htmlText = LT + "br>"
+            y = y + lineHeight
+            lineHeight = fs * 1.5
+            x = 0
         Else
             p = pSave
         End If
@@ -836,7 +891,7 @@ Module SmallWikiPadModule
     Sub Parse_BulletList()
         ' EBNF: bullet list = bullet list item, { bullet list item }, CR, LF;
         ' return match - "True" if match
-        ' return htmlText - bullet list
+        ' return htmlText - HTML text of bullet list
         Stack.PushValue("local", pSave)
         Stack.PushValue("local", htmlText)
         pSave = p
@@ -891,7 +946,7 @@ Module SmallWikiPadModule
         ' EBNF: bullet list item = { '    ' }, '-', space, text, CR, LF;
         ' return match - "True" if match
         ' return indent - number of indent
-        ' return htmlText - bullet list item
+        ' return htmlText - HTML text of bullet list item
         Stack.PushValue("local", pSave)
         Stack.PushValue("local", indent)
         pSave = p
@@ -913,6 +968,7 @@ Module SmallWikiPadModule
             Parse_Space()
         End If
         If match Then
+            delim = ""
             Parse_Text()
         End If
         If match Then
@@ -925,7 +981,31 @@ Module SmallWikiPadModule
         End If
         _indent = Stack.PopValue("local")
         If match Then
-            htmlText = LT + "li>" + htmlText + LT + "/li>" + CR + LF
+            htmlText = LT + "li>" + txt + LT + "/li>" + CR + LF
+            x = (indent * 20) + 20
+            If paragraph Then
+                y = y + lineHeight + fsNormal
+                x = 0
+                lineHeight = fsNormal * 1.5
+            End If
+            y = y + 7
+            width = 5
+            height = 5
+            _bc = bc
+            _pw = pw
+            If indent = 1 Then
+                bc = "#FFFFFF"
+                pw = 1
+            End If
+            Shapes_AddEllipse()
+            bc = _bc
+            pw = _pw
+            y = y - 7
+            x = x + 10
+            Shapes_AddText()
+            lineHeight = Microsoft.SmallBasic.Library.Math.Max(lineHeight, fs * 1.5)
+            y = y + lineHeight
+            lineHeight = fsNormal * 1.5
         Else
             p = pSave
             indent = _indent
@@ -960,12 +1040,13 @@ Module SmallWikiPadModule
         End If
     End Sub
     Sub Parse_Column()
-        ' EBNF: column = text, '|';
+        ' EBNF: column = rich text, '|';
         ' return match - "True" if match
-        ' return htmlText - column
+        ' return htmlText - HTML text of column
         Stack.PushValue("local", pSave)
         pSave = p
-        Parse_Text()
+        delim = "|"
+        Parse_RichText()
         If match Then
             c = Text.GetSubText(buf, p, 1)
             If c = CType("|", Primitive) Then
@@ -1012,7 +1093,7 @@ Module SmallWikiPadModule
     Sub Parse_Heading()
         ' EBNF: heading = '#', { '#' }, space, text, CR, LF;
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text of heading
         Stack.PushValue("local", pSave)
         pSave = p
         nH = 0
@@ -1037,6 +1118,7 @@ Module SmallWikiPadModule
             Parse_Space()
         End If
         If match Then
+            delim = ""
             Parse_Text()
         End If
         If match Then
@@ -1048,7 +1130,23 @@ Module SmallWikiPadModule
             End If
         End If
         If match Then
-            htmlText = LT + "h" + nH + ">" + htmlText + LT + "/h" + nH + ">" + CR + LF
+            htmlText = LT + "h" + nH + ">" + txt + LT + "/h" + nH + ">" + CR + LF
+            If paragraph Then
+                y = y + lineHeight + fsNormal
+                x = 0
+                lineHeight = fsNormal * 1.5
+            End If
+            _fb = fb
+            fb = true
+            _fs = fs
+            fs = fsH(nH)
+            Shapes_AddText()
+            fb = _fb
+            lineHeight = Microsoft.SmallBasic.Library.Math.Max(lineHeight, fs * 1.5)
+            fs = _fs
+            y = y + lineHeight
+            x = 0
+            lineHeight = fsNormal * 1.5
         Else
             p = pSave
         End If
@@ -1077,15 +1175,29 @@ Module SmallWikiPadModule
         End If
         If match Then
             htmlText = LT + "hr>" + CR + LF
+            If paragraph Then
+                y = y + lineHeight + fsNormal
+                x = 0
+                lineHeight = fsNormal * 1.5
+            End If
+            height = 2
+            width = gw - 20
+            pw = 0
+            _bc = bc
+            bc = "#666666"
+            Shapes_AddRectangle()
+            bc = _bc
+            y = y + 5
+            x = 0
         Else
             p = pSave
         End If
         pSave = Stack.PopValue("local")
     End Sub
     Sub Parse_Image()
-        ' EBNF: image = '![', [ plane text ], '](', plane text, ')';
+        ' EBNF: image = '![', [ text ], '](', text, ')';
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text
         Stack.PushValue("local", pSave)
         pSave = p
         c2 = Text.GetSubText(buf, p, 2)
@@ -1096,9 +1208,10 @@ Module SmallWikiPadModule
             match = false
         End If
         If match Then
-            Parse_PlaneText()
+            delim = "]("
+            Parse_Text()
             If match Then
-                altText = htmlText
+                altText = txt
             Else
                 altText = ""
             End If
@@ -1114,7 +1227,8 @@ Module SmallWikiPadModule
             End If
         End If
         If match Then
-            Parse_PlaneText()
+            delim = ")"
+            Parse_Text()
         End If
         If match Then
             c = Text.GetSubText(buf, p, 1)
@@ -1125,16 +1239,25 @@ Module SmallWikiPadModule
             End If
         End If
         If match Then
-            htmlText = LT + "img src='" + htmlText + "' alt='" + altText + "'>"
+            imageName = txt
+            htmlText = LT + "img src='" + txt + "' alt='" + altText + "'>"
+            If paragraph Then
+                y = y + lineHeight + fsNormal
+                x = 0
+                lineHeight = fsNormal * 1.5
+            End If
+            Shapes_AddImage()
+            lineHeight = Microsoft.SmallBasic.Library.Math.Max(shp("height") + (fsNormal * 0.5), lineHeight)
+            x = x + shp("width")
         Else
             p = pSave
         End If
         pSave = Stack.PopValue("local")
     End Sub
     Sub Parse_Italic()
-        ' EBNF: italic = '_', ( bold | plane text ), '_';
+        ' EBNF: italic = '_', ( bold | text ), '_';
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text
         Stack.PushValue("local", pSave)
         pSave = p
         c = Text.GetSubText(buf, p, 1)
@@ -1147,7 +1270,11 @@ Module SmallWikiPadModule
         If match Then
             Parse_Bold()
             If __Not(match) Then
-                Parse_PlaneText()
+                delim = "_"
+                Parse_Text()
+                If match Then
+                    htmlText = txt
+                End If
             End If
         End If
         If match Then
@@ -1160,22 +1287,25 @@ Module SmallWikiPadModule
         End If
         If match Then
             htmlText = LT + "em>" + htmlText + LT + "/em>"
-            fb = false
+            _fi = fi
             fi = true
+            fs = fsNormal
             Shapes_AddText()
-            y = y + (fs * 1.5)
+            x = x + width
+            fi = _fi
         Else
             p = pSave
         End If
         pSave = Stack.PopValue("local")
     End Sub
     Sub Parse_Line()
-        ' EBNF: line = text, CR, LF;
+        ' EBNF: line = rich text, CR, LF;
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text
         Stack.PushValue("local", pSave)
         pSave = p
-        Parse_Text()
+        delim = ""
+        Parse_RichText()
         If match Then
             c2 = Text.GetSubText(buf, p, 2)
             If c2 = (CR + LF) Then
@@ -1192,9 +1322,9 @@ Module SmallWikiPadModule
         pSave = Stack.PopValue("local")
     End Sub
     Sub Parse_Link()
-        ' EBNF: link = '[', [ plane text ], '](', plane text, ')';
+        ' EBNF: link = '[', [ text ], '](', text, ')';
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text
         Stack.PushValue("local", pSave)
         Stack.PushValue("local", htmlText)
         pSave = p
@@ -1206,9 +1336,10 @@ Module SmallWikiPadModule
             match = false
         End If
         If match Then
-            Parse_PlaneText()
+            delim = "]("
+            Parse_Text()
             If match Then
-                caption = htmlText
+                caption = txt
             Else
                 caption = ""
             End If
@@ -1224,7 +1355,8 @@ Module SmallWikiPadModule
             End If
         End If
         If match Then
-            Parse_PlaneText()
+            delim = ")"
+            Parse_Text()
         End If
         If match Then
             c = Text.GetSubText(buf, p, 1)
@@ -1236,7 +1368,13 @@ Module SmallWikiPadModule
         End If
         _htmlText = Stack.PopValue("local")
         If match Then
-            htmlText = LT + "a href='" + htmlText + "'>" + caption + LT + "/a>"
+            htmlText = LT + "a href='" + txt + "'>" + caption + LT + "/a>"
+            txt = caption
+            Stack.PushValue("local", bc)
+            bc = "Blue"
+            Shapes_AddText()
+            bc = Stack.PopValue("local")
+            x = x + width
         Else
             p = pSave
             htmlText = _htmlText
@@ -1259,7 +1397,7 @@ Module SmallWikiPadModule
         ' EBNF: number = digit, { digit };
         ' EBNF: digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text
         c = Text.GetSubText(buf, p, 1)
         match = false
         htmlText = ""
@@ -1269,17 +1407,16 @@ Module SmallWikiPadModule
             p = p + 1
             c = Text.GetSubText(buf, p, 1)
         End While
-        If match Then
-        End If
     End Sub
     Sub Parse_NumberList()
         ' EBNF: number list = number list item, { number list item }, CR, LF;
         ' return match - "True" if match
-        ' return htmlText
+        ' return htmlText - HTML text
         Stack.PushValue("local", pSave)
         Stack.PushValue("local", htmlText)
         pSave = p
         lastIndent = -1
+        nN = ""
         Parse_NumberListItem()
         If match Then
             While lastIndent < indent
@@ -1296,6 +1433,8 @@ Module SmallWikiPadModule
                 Parse_NumberListItem()
                 _htmlText = Stack.PopValue("local")
                 If match Then
+                    If lastIndent = indent Then
+                    End If
                     While lastIndent < indent
                         If lastIndent = 0 Then
                             type = " type='i'"
@@ -1331,6 +1470,7 @@ Module SmallWikiPadModule
                 htmlText = htmlText + LT + "/ol>" + CR + LF
                 indent = indent - 1
             End While
+            x = 0
         Else
             htmlText = _htmlText
             p = pSave
@@ -1341,7 +1481,7 @@ Module SmallWikiPadModule
         ' EBNF: number list item = { '    ' }, number, '.', space, text, CR, LF;
         ' return match - "True" if match
         ' return indent - number of indent
-        ' return htmlText
+        ' return htmlText - HTML text
         Stack.PushValue("local", pSave)
         Stack.PushValue("local", indent)
         pSave = p
@@ -1352,6 +1492,9 @@ Module SmallWikiPadModule
             p = p + 4
             c4 = Text.GetSubText(buf, p, 4)
         End While
+        If lastIndent < indent Then
+            nN(indent) = 0
+        End If
         Parse_Number()
         If match Then
             c = Text.GetSubText(buf, p, 1)
@@ -1365,6 +1508,7 @@ Module SmallWikiPadModule
             Parse_Space()
         End If
         If match Then
+            delim = ""
             Parse_Text()
         End If
         If match Then
@@ -1377,51 +1521,57 @@ Module SmallWikiPadModule
         End If
         _indent = Stack.PopValue("local")
         If match Then
-            htmlText = LT + "li>" + htmlText + LT + "/li>" + CR + LF
+            htmlText = LT + "li>" + txt + LT + "/li>" + CR + LF
+            x = (indent * 20) + 18
+            nN(indent) = nN(indent) + 1
+            If indent = 1 Then
+                num = roman(nN(1))
+            Else
+                num = nN(indent)
+            End If
+            txt = Text.Append(Text.Append(num, ". "), txt)
+            Shapes_AddText()
+            lineHeight = Microsoft.SmallBasic.Library.Math.Max(lineHeight, fs * 1.5)
+            y = y + lineHeight
+            x = 0
+            lineHeight = fsNormal * 1.5
         Else
             p = pSave
             indent = _indent
         End If
         pSave = Stack.PopValue("local")
     End Sub
-    Sub Parse_PlaneText()
-        ' EBNF: plane text = character - ( '|' | CR | LF ), { character - ( '&' | '<' | '*' | '_' | '[' | ']' | ')' | '!' | '|' | ' ' | TAB | CR | LF ) };
+    Sub Parse_RichText()
+        ' EBNF: rich text = span, { span - delimiter};
+        ' param delim - delimiter
         ' return match - "True" if match
-        ' return htmlText - plane text
-        htmlText = ""
-        c = Text.GetSubText(buf, p, 1)
-        If Text.IsSubText("|" + CR + LF, c) Then
-            match = false
-        Else
-            match = true
-        End If
+        ' return htmlText - HTML text of rich text
+        Parse_Span()
         If match Then
-            Parse_Character()
-        End If
-        If match Then
-            If c = CType("&", Primitive) Then
-                htmlText = "&amp;"
-            ElseIf c = CType("<", Primitive) Then
-                htmlText = "&lt;"
-            Else
-                htmlText = c
-            End If
             While match
-                c = Text.GetSubText(buf, p, 1)
-                If Text.IsSubText("&*_[])!| " + TAB + LT + CR + LF, c) Then
-                    match = false
+                If delim <> CType("", Primitive) Then
+                    len = Text.GetLength(delim)
+                    cn = Text.GetSubText(buf, p, len)
+                    If cn = delim Then
+                        match = false
+                    End If
                 End If
                 If match Then
-                    Parse_Character()
-                End If
-                If match Then
-                    htmlText = Text.Append(htmlText, c)
+                    Stack.PushValue("local", htmlText)
+                    Stack.PushValue("local", txt)
+                    Parse_Span()
+                    _txt = Stack.PopValue("local")
+                    _htmlText = Stack.PopValue("local")
+                    If match Then
+                        htmlText = Text.Append(_htmlText, htmlText)
+                        txt = Text.Append(_txt, txt)
+                    Else
+                        htmlText = _htmlText
+                        txt = _txt
+                    End If
                 End If
             End While
             match = true
-        End If
-        If match Then
-            txt = htmlText
         End If
     End Sub
     Sub Parse_Row()
@@ -1552,7 +1702,7 @@ Module SmallWikiPadModule
         End If
     End Sub
     Sub Parse_Span()
-        ' EBNF: span = bold | italic | image | link | break | plane text;
+        ' EBNF: span = bold | italic | image | link | break | token;
         ' return match - "True" if match
         ' return htmlText
         Parse_Bold()
@@ -1569,7 +1719,18 @@ Module SmallWikiPadModule
             Parse_Break()
         End If
         If __Not(match) Then
-            Parse_PlaneText()
+            Parse_Token()
+            If match Then
+                htmlText = txt
+                If __Not(paragraph) Then
+                    y = y + lineHeight + fsNormal
+                    x = 0
+                    lineHeight = fsNormal * 1.5
+                    paragraph = true
+                End If
+                Shapes_AddText()
+                x = x + width
+            End If
         End If
     End Sub
     Sub Parse_Table()
@@ -1607,28 +1768,85 @@ Module SmallWikiPadModule
         End If
         If match Then
             htmlText = LT + "table border='1'>" + CR + LF + htmlText + LT + "/table>" + CR + LF
+            If paragraph Then
+                y = y + lineHeight + fsNormal
+                x = 0
+                lineHeight = fsNormal * 1.5
+            End If
+            y = y + lineHeight + fsNormal
+            x = 0
         Else
             p = pSave
         End If
         pSave = Stack.PopValue("local")
     End Sub
     Sub Parse_Text()
-        ' EBNF: text = span, { span };
+        ' EBNF: text = token, { token - delimiter };
+        ' param delim - delimiter
         ' return match - "True" if match
-        ' return htmlText
-        Parse_Span()
+        ' return txt - text
+        Parse_Token()
         If match Then
             While match
-                Stack.PushValue("local", htmlText)
-                Parse_Span()
-                _htmlText = Stack.PopValue("local")
+                If delim <> CType("", Primitive) Then
+                    len = Text.GetLength(delim)
+                    cn = Text.GetSubText(buf, p, len)
+                    If cn = delim Then
+                        match = false
+                    End If
+                End If
                 If match Then
-                    htmlText = Text.Append(_htmlText, htmlText)
-                Else
-                    htmlText = _htmlText
+                    Stack.PushValue("local", txt)
+                    Parse_Token()
+                    _txt = Stack.PopValue("local")
+                    If match Then
+                        txt = Text.Append(_txt, txt)
+                    Else
+                        txt = _txt
+                    End If
                 End If
             End While
             match = true
+        End If
+    End Sub
+    Sub Parse_Token()
+        ' EBNF: token = character - ( '|' | CR | LF ), { character - ( '&' | '<' | '*' | '_' | '[' | ']' | ')' | '!' | '|' | ' ' | TAB | CR | LF ) };
+        ' return match - "True" if match
+        ' return txt - token
+        txt = ""
+        c = Text.GetSubText(buf, p, 1)
+        If Text.IsSubText("|" + CR + LF, c) Then
+            match = false
+        Else
+            match = true
+        End If
+        If match Then
+            Parse_Character()
+        End If
+        If match Then
+            If c = CType("&", Primitive) Then
+                txt = "&amp;"
+            ElseIf c = CType("<", Primitive) Then
+                txt = "&lt;"
+            Else
+                txt = c
+            End If
+            While match
+                c = Text.GetSubText(buf, p, 1)
+                If Text.IsSubText("&*_[])!| " + TAB + LT + CR + LF, c) Then
+                    match = false
+                End If
+                If match Then
+                    Parse_Character()
+                End If
+                If match Then
+                    txt = Text.Append(txt, c)
+                End If
+            End While
+            match = true
+        End If
+        If __Not(match) Then
+            txt = ""
         End If
     End Sub
     Sub Parse_WikiText()
@@ -1636,6 +1854,7 @@ Module SmallWikiPadModule
         ' param wikiText
         ' return match - "True" if match
         ' return htmlText
+        fs = fsNormal
         buf = wikiText
         p = 1
         Parse_Block()
@@ -1653,6 +1872,8 @@ Module SmallWikiPadModule
                 End If
                 If lastParagraph And __Not(paragraph) Then
                     _htmlText = _htmlText + LT + "/p>" + CR + LF
+                    lineHeight = fsNormal * 1.5
+                    x = 0
                 End If
                 htmlText = Text.Append(_htmlText, htmlText)
             Else
@@ -1663,6 +1884,7 @@ Module SmallWikiPadModule
         If paragraph Then
             htmlText = htmlText + LT + "/p>" + CR + LF
         End If
+        htmlText = LT + "html>" + CR + LF + LT + "body>" + CR + LF + htmlText + LT + "/body>" + CR + LF + LT + "/html>" + CR + LF
     End Sub
     Sub SB_RotateWorkaround()
         ' Small Basic | Rotate workaround for Silverlight
@@ -1692,6 +1914,58 @@ Module SmallWikiPadModule
         Else
             silverlight = false
         End If
+    End Sub
+    Sub Shapes_AddEllipse()
+        ' param x, y - top left position
+        ' param width
+        ' param height
+        Shapes_EntryClear()
+        Shapes_PenToEntry()
+        Shapes_BrushToEntry()
+        func = "ell"
+        Shapes_FuncToEntry()
+        Shapes_MoveToEntry()
+        Shapes_RotateToEntry()
+        Shapes_EntryToArray()
+    End Sub
+    Sub Shapes_AddImage()
+        ' param x, y - top left position
+        ' param imageName - image url
+        Shapes_EntryClear()
+        func = "img"
+        Shapes_FuncToEntry()
+        Shapes_MoveToEntry()
+        Shapes_RotateToEntry()
+        Shapes_EntryToArray()
+    End Sub
+    Sub Shapes_AddRectangle()
+        ' param x, y - top left position
+        ' param width
+        ' param height
+        Shapes_EntryClear()
+        Shapes_PenToEntry()
+        Shapes_BrushToEntry()
+        func = "rect"
+        Shapes_FuncToEntry()
+        Shapes_MoveToEntry()
+        Shapes_RotateToEntry()
+        Shapes_EntryToArray()
+    End Sub
+    Sub Shapes_AddText()
+        ' param x, y - top left position
+        ' param txt - text
+        Shapes_EntryClear()
+        Shapes_PenToEntry()
+        Shapes_BrushToEntry()
+        Shapes_FontToEntry()
+        func = "text"
+        Shapes_FuncToEntry()
+        Shapes_MoveToEntry()
+        Shapes_RotateToEntry()
+        Shapes_EntryToArray()
+    End Sub
+    Sub Shapes_BrushToEntry()
+        shp("bc") = bc
     End Sub
     Sub Shapes_CalcWidthAndHeight()
         ' Shapes | Calculate total width and height of shapes
@@ -1747,22 +2021,20 @@ Module SmallWikiPadModule
             shape(i) = shp
         Next
     End Sub
-    Sub Shapes_AddText()
-        ' param x, y - top left position
-        ' param txt - text
-        Shapes_EntryClear()
-        Shapes_PenToEntry()
-        Shapes_BrushToEntry()
-        Shapes_FontToEntry()
-        func = "text"
-        Shapes_FuncToEntry()
-        Shapes_MoveToEntry()
-        Shapes_RotateToEntry()
-        Shapes_EntryToArray()
-    End Sub
-    Sub Shapes_BrushToEntry()
-        GraphicsWindow.BrushColor = bc
-        shp("bc") = bc
+    Sub Shapes_DumpArray()
+        Stack.PushValue("local", buf)
+        buf = ""
+        If 0 < shX Then
+            buf = buf + "  shX = " + shX + LF
+        End If
+        If 0 < shY Then
+            buf = buf + "  shY = " + shY + LF
+        End If
+        For i = iMin To iMax
+            buf = buf + "  shape[" + i + "] = " + WQ + shape(i) + WQ + LF
+        Next
+        TextWindow.WriteLine(buf)
+        buf = Stack.PopValue("local")
     End Sub
     Sub Shapes_EntryClear()
         shp = ""
@@ -1772,27 +2044,20 @@ Module SmallWikiPadModule
         shape(iMax) = shp
     End Sub
     Sub Shapes_FontToEntry()
-        GraphicsWindow.FontSize = fs
         shp("fs") = fs
-        GraphicsWindow.FontName = fn
         shp("fn") = fn
-        GraphicsWindow.FontBold = fb
         shp("fb") = fb
-        GraphicsWindow.FontItalic = fi
         shp("fi") = fi
     End Sub
     Sub Shapes_FuncToEntry()
         shp("func") = func
         If func = CType("ell", Primitive) Then
-            obj = Shapes.AddEllipse(width, height)
             shp("width") = Microsoft.SmallBasic.Library.Math.Floor(width * 100) / 100
             shp("height") = Microsoft.SmallBasic.Library.Math.Floor(height * 100) / 100
         ElseIf func = CType("rect", Primitive) Then
-            obj = Shapes.AddRectangle(width, height)
             shp("width") = Microsoft.SmallBasic.Library.Math.Floor(width * 100) / 100
             shp("height") = Microsoft.SmallBasic.Library.Math.Floor(height * 100) / 100
         ElseIf func = CType("tri", Primitive) Then
-            obj = Shapes.AddTriangle(x1, y1, x2, y2, x3, y3)
             shp("x1") = Microsoft.SmallBasic.Library.Math.Floor(x1 * 100) / 100
             shp("y1") = Microsoft.SmallBasic.Library.Math.Floor(y1 * 100) / 100
             shp("x2") = Microsoft.SmallBasic.Library.Math.Floor(x2 * 100) / 100
@@ -1800,14 +2065,26 @@ Module SmallWikiPadModule
             shp("x3") = Microsoft.SmallBasic.Library.Math.Floor(x3 * 100) / 100
             shp("y3") = Microsoft.SmallBasic.Library.Math.Floor(y3 * 100) / 100
         ElseIf func = CType("line", Primitive) Then
-            obj = Shapes.AddLine(x1, y1, x2, y2)
             shp("x1") = Microsoft.SmallBasic.Library.Math.Floor(x1 * 100) / 100
             shp("y1") = Microsoft.SmallBasic.Library.Math.Floor(y1 * 100) / 100
             shp("x2") = Microsoft.SmallBasic.Library.Math.Floor(x2 * 100) / 100
             shp("y2") = Microsoft.SmallBasic.Library.Math.Floor(y2 * 100) / 100
         ElseIf func = CType("text", Primitive) Then
-            obj = Shapes.AddText(txt)
             shp("text") = txt
+            Font_GetTextWidth()
+            shp("width") = width
+            shp("height") = fs
+        ElseIf func = CType("img", Primitive) Then
+            shp("src") = imageName
+            If Text.IsSubText(imageName, ":") Then
+                fileNameOrUrl = imageName
+            Else
+                fileNameOrUrl = Program.Directory + "/" + imageName
+            End If
+            img = ImageList.LoadImage(fileNameOrUrl)
+            shp("img") = img
+            shp("width") = ImageList.GetWidthOfImage(img)
+            shp("height") = ImageList.GetHeightOfImage(img)
         End If
     End Sub
     Sub Shapes_Init()
@@ -1843,22 +2120,28 @@ Module SmallWikiPadModule
         shape(24) = "func=rect;x=0;y=554;width=578;height=1;pc=#666666;pw=1;"
     End Sub
     Sub Shapes_MoveToEntry()
-        Shapes.Move(obj, shX + x, shY + y)
         shp("x") = Microsoft.SmallBasic.Library.Math.Floor(x * 100) / 100
         shp("y") = Microsoft.SmallBasic.Library.Math.Floor(y * 100) / 100
     End Sub
     Sub Shapes_PenToEntry()
-        GraphicsWindow.PenWidth = pw
         shp("pw") = pw
         If 0 < pw Then
-            GraphicsWindow.PenColor = pc
             shp("pc") = pc
         End If
     End Sub
+    Sub Shapes_Restore()
+        shape = _shape
+        shX = _shX
+        shY = _shY
+    End Sub
     Sub Shapes_RotateToEntry()
         If angle <> 0 Then
-            Shapes.Rotate(obj, angle)
             shp("angle") = Microsoft.SmallBasic.Library.Math.Floor(angle * 100) / 100
         End If
+    End Sub
+    Sub Shapes_Save()
+        _shape = shape
+        _shX = shX
+        _shY = shY
     End Sub
 End Module
